@@ -1,0 +1,11 @@
+from . import sale_order # noqa
+from . import product # noqa
+from . import konfoo_session # noqa
+from . import konfoo_api # noqa
+from . import konfoo_dataset # noqa
+from . import konfoo_dataset_field # noqa
+from . import konfoo_dataset_object # noqa
+from . import konfoo_sync # noqa
+from . import konfoo_allowed_model # noqa
+from . import res_config_settings # noqa
+from . import res_company # noqa

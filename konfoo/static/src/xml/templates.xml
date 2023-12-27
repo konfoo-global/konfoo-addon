@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<templates>
+    <t t-name="konfoo.legacy" owl="1">
+        <iframe class="o_konfoo_iframe" t-att-src="knf_url" onload="window.onKonfooIframeLoad(this)"></iframe>
+    </t>
+</templates>

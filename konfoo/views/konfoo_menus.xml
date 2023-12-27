@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <menuitem id="konfoo_menu_root"
+        name="Konfoo"
+        web_icon="konfoo,static/description/icon-raised.png" />
+
+    <menuitem id="konfoo_datasets_menu"
+        name="Datasets"
+        groups="base.group_user"
+        parent="konfoo_menu_root"
+        action="konfoo.act_datasets"
+        sequence="2"/>
+
+    <menuitem id="konfoo_tech_menu"
+        name="Technical"
+        groups="konfoo.group_konfoo_admin"
+        parent="konfoo_menu_root"
+        sequence="10"/>
+
+    <menuitem id="konfoo_sessions_menu"
+        name="Sessions"
+        groups="konfoo.group_konfoo_admin"
+        parent="konfoo_tech_menu"
+        action="konfoo.act_sessions"
+        sequence="1"/>
+
+    <menuitem id="konfoo_cache_menu"
+        name="Sync Cache"
+        groups="konfoo.group_konfoo_admin"
+        parent="konfoo_tech_menu"
+        action="konfoo.act_dataset_objects"
+        sequence="2"/>
+
+    <menuitem id="konfoo_allowed_models_menu"
+        name="Allowed models"
+        groups="konfoo.group_konfoo_admin"
+        parent="konfoo_tech_menu"
+        action="konfoo.act_allowed_models"
+        sequence="3"/>
+</odoo>

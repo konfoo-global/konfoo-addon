@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_inherit_konfoo" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.konfoo</field>
+        <field name="model">res.config.settings</field>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//div[hasclass('settings')]" position="inside">
+                <div class="app_settings_block" data-string="konfoo" string="Konfoo" data-key="konfoo">
+                    <h2>Common settings</h2>
+                    <div class="row mt16 o_settings_container" name="konfoo_common">
+                        <div class="col-12 col-lg-6 o_setting_box" id="konfoo_product_lookup_field">
+                            <div class="o_setting_right_pane">
+                                <label
+                                    for="konfoo_product_lookup_field"
+                                    string="Field for matching products to items coming from the configurator"/>
+                                <field name="konfoo_product_lookup_field"/>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box" id="konfoo_default_uom_id">
+                            <div class="o_setting_right_pane">
+                                <label for="konfoo_default_uom_id" string="Default UOM"/>
+                                <field name="konfoo_default_uom_id"/>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_right_pane">
+                                <label
+                                    for="konfoo_sync_batch_size"
+                                    string="The maximum number of records synced in one batch"/>
+                                <field name="konfoo_sync_batch_size"/>
+                            </div>
+                        </div>
+                    </div>
+
+                    <h2>Konfoo Connection - STAGING</h2>
+                    <div class="row mt16 o_settings_container">
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_right_pane">
+                                <label for="konfoo_url_staging" string="Konfoo URL"/>
+                                <field name="konfoo_url_staging"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="konfoo_client_id_staging" string="Konfoo Client ID"/>
+                                <field name="konfoo_client_id_staging"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="konfoo_sync_host_staging" string="Konfoo Sync URL"/>
+                                <field name="konfoo_sync_host_staging"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="konfoo_sync_key_staging" string="Konfoo Sync Key"/>
+                                <field name="konfoo_sync_key_staging"/>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_right_pane">
+                                <button
+                                    name="action_konfoo_test_connection_staging"
+                                    string="Test Connection"
+                                    type="object"
+                                    groups="konfoo.group_konfoo_admin"
+                                    class="oe_highlight" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <h2>Konfoo Connection - LIVE</h2>
+                    <div class="row mt16 o_settings_container">
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_right_pane">
+                                <label for="konfoo_url" string="Konfoo URL"/>
+                                <field name="konfoo_url"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="konfoo_client_id" string="Konfoo Client ID"/>
+                                <field name="konfoo_client_id"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="konfoo_sync_host" string="Konfoo Sync URL"/>
+                                <field name="konfoo_sync_host"/>
+                            </div>
+                            <div class="o_setting_right_pane">
+                                <label for="konfoo_sync_key" string="Konfoo Sync Key"/>
+                                <field name="konfoo_sync_key"/>
+                            </div>
+                        </div>
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_right_pane">
+                                <button
+                                    name="action_konfoo_test_connection_production"
+                                    string="Test Connection"
+                                    type="object"
+                                    groups="konfoo.group_konfoo_admin"
+                                    class="oe_highlight" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </xpath>
+        </field>
+    </record>
+</odoo>

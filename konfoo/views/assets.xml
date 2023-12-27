@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<odoo>
+    <template id="assets_konfoo" name="assets_konfoo" inherit_id="web.assets_backend">
+        <xpath expr="." position="inside">
+            <link rel="stylesheet" type="text/css" href="/konfoo/static/src/css/main.css" />
+            <script type="text/javascript" src="/konfoo/static/src/js/main.js" />
+        </xpath>
+    </template>
+</odoo>

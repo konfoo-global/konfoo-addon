@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_konfoo_allowed_model" model="ir.ui.view">
+            <field name="name">konfoo.allowed.model.form</field>
+            <field name="model">konfoo.allowed.model</field>
+            <field name="arch" type="xml">
+                <form string="Allowed model">
+                    <sheet>
+                        <group>
+                            <field name="model" />
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_konfoo_allowed_models" model="ir.ui.view">
+            <field name="name">konfoo.allowed.model.tree</field>
+            <field name="model">konfoo.allowed.model</field>
+            <field name="arch" type="xml">
+                <tree string="Allowed models">
+                    <field name="model" />
+                    <field name="model" widget="text" string="Technical name" />
+                </tree>
+            </field>
+        </record>
+
+        <record id="konfoo.act_allowed_models" model="ir.actions.act_window">
+            <field name="name">Allowed models</field>
+            <field name="res_model">konfoo.allowed.model</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_konfoo_allowed_models"/>
+            <field name="context">{'in_konfoo_app': True}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No additional allowed models configured
+                </p>
+            </field>
+        </record>
+    </data>
+</odoo>

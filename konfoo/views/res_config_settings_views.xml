@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="res_config_settings_view_form_inherit_konfoo" model="ir.ui.view">
+        <field name="name">res.config.settings.view.form.inherit.konfoo</field>
+        <field name="model">res.config.settings</field>
+        <field name="priority" eval="42"/>
+        <field name="inherit_id" ref="base.res_config_settings_view_form"/>
+        <field name="arch" type="xml">
+            <xpath expr="//form" position="inside">
+                <app string="Konfoo" data-string="Konfoo" name="konfoo" groups="konfoo.group_konfoo_admin" logo="/konfoo/static/description/icon.png">
+                    <block title="Common settings" name="konfoo_settings_common" groups="konfoo.group_konfoo_admin">
+                        <setting
+                            id="setting_konfoo_default_uom_id"
+                            help="Default unit of measure used in BOM. If not specified `Units` is used.">
+                            <field name="konfoo_default_uom_id" />
+                        </setting>
+                    </block>
+                    <block title="Connection - STAGING" name="konfoo_settings_staging" groups="konfoo.group_konfoo_admin">
+                        <setting id="setting_konfoo_url_staging">
+                            <field name="konfoo_url_staging" />
+                        </setting>
+                        <setting id="setting_konfoo_client_id_staging">
+                            <field name="konfoo_client_id_staging" />
+                        </setting>
+                        <setting id="setting_konfoo_sync_host_staging">
+                            <field name="konfoo_sync_host_staging" />
+                        </setting>
+                        <setting id="setting_konfoo_sync_key_staging">
+                            <field name="konfoo_sync_key_staging" />
+                        </setting>
+                        <setting id="setting_test_staging">
+                            <button
+                                name="action_konfoo_test_connection_staging"
+                                string="Test Connection"
+                                type="object"
+                                class="oe_highlight" />
+                        </setting>
+                    </block>
+                    <block title="Connection - LIVE" name="konfoo_settings_live" groups="konfoo.group_konfoo_admin">
+                        <setting id="setting_konfoo_url">
+                            <field name="konfoo_url" />
+                        </setting>
+                        <setting id="setting_konfoo_client_id">
+                            <field name="konfoo_client_id" />
+                        </setting>
+                        <setting id="setting_konfoo_sync_host">
+                            <field name="konfoo_sync_host" />
+                        </setting>
+                        <setting id="setting_konfoo_sync_key">
+                            <field name="konfoo_sync_key" />
+                        </setting>
+
+                        <setting>
+                            <button
+                                name="action_konfoo_test_connection_production"
+                                string="Test Connection"
+                                type="object"
+                                class="oe_highlight" />
+                        </setting>
+                    </block>
+                    <block title="Advanced" name="konfoo_settings_advanced" groups="konfoo.group_konfoo_admin">
+                        <setting
+                            id="setting_konfoo_product_lookup_field"
+                            help="Field for matching products to items coming from the configurator. If not specified `default_code` is used.">
+                            <field name="konfoo_product_lookup_field" />
+                        </setting>
+                        <setting
+                            id="setting_konfoo_sync_batch_size"
+                            help="The maximum number of records synced in one batch. If not specified 100 is used.">
+                            <field name="konfoo_sync_batch_size" />
+                        </setting>
+                    </block>
+                </app>
+            </xpath>
+        </field>
+    </record>
+
+    <record id="action_konfoo_configuration" model="ir.actions.act_window">
+        <field name="name">Konfoo settings</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module' : 'konfoo', 'bin_size': False}</field>
+    </record>
+</odoo>

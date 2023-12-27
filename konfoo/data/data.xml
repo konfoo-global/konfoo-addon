@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data noupdate="1">
+        <record forcecreate="True" id="ir_config_param_konfoo_client_id" model="ir.config_parameter">
+            <field name="key">konfoo.client_id</field>
+            <field name="value"></field>
+        </record>
+        <record forcecreate="True" id="ir_config_param_konfoo_client_id_staging" model="ir.config_parameter">
+            <field name="key">konfoo.client_id.staging</field>
+            <field name="value"></field>
+        </record>
+        <record forcecreate="True" id="ir_config_param_konfoo_url" model="ir.config_parameter">
+            <field name="key">konfoo.url</field>
+            <field name="value"></field>
+        </record>
+        <record forcecreate="True" id="ir_config_param_konfoo_url_staging" model="ir.config_parameter">
+            <field name="key">konfoo.url.staging</field>
+            <field name="value"></field>
+        </record>
+        <record forcecreate="True" id="ir_config_param_konfoo_product_lookup_field" model="ir.config_parameter">
+            <field name="key">konfoo.product_lookup_field</field>
+            <field name="value"></field>
+        </record>
+        <record forcecreate="True" id="ir_config_param_konfoo_default_uom" model="ir.config_parameter">
+            <field name="key">konfoo.default_uom_name</field>
+            <field name="value"></field>
+        </record>
+        <record forcecreate="True" id="ir_config_param_konfoo_sync_host" model="ir.config_parameter">
+            <field name="key">konfoo.sync_host</field>
+            <field name="value"></field>
+        </record>
+        <record forcecreate="True" id="ir_config_param_konfoo_sync_host_staging" model="ir.config_parameter">
+            <field name="key">konfoo.sync_host.staging</field>
+            <field name="value"></field>
+        </record>
+        <record forcecreate="True" id="ir_config_param_konfoo_sync_key" model="ir.config_parameter">
+            <field name="key">konfoo.sync_key</field>
+            <field name="value"></field>
+        </record>
+        <record forcecreate="True" id="ir_config_param_konfoo_sync_key_staging" model="ir.config_parameter">
+            <field name="key">konfoo.sync_key.staging</field>
+            <field name="value"></field>
+        </record>
+        <record forcecreate="True" id="ir_config_param_konfoo_sync_batch_size" model="ir.config_parameter">
+            <field name="key">konfoo.sync_batch_size</field>
+            <field name="value">100</field>
+        </record>
+    </data>
+</odoo>

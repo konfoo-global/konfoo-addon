@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="view_konfoo_dataset" model="ir.ui.view">
+            <field name="name">konfoo.dataset.form</field>
+            <field name="model">konfoo.dataset</field>
+            <field name="arch" type="xml">
+                <form string="Dataset">
+                    <header>
+                        <button
+                            name="action_sync_now"
+                            type="object"
+                            class="oe_highlight"
+                            string="Sync now" />
+                        <button
+                            name="action_reset_dataset"
+                            type="object"
+                            string="Reset"
+                            confirm="Are you sure you want to re-initialize this dataset in Konfoo?" />
+                    </header>
+                    <sheet>
+                        <div class="alert alert-primary" role="alert">
+                            Changing <b>Name</b>, <b>Model</b> or <b>Fields</b> will result in the
+                            dataset having to be resynchronized to Konfoo in its entirety.
+                        </div>
+                        <group>
+                            <field name="id" invisible="1" />
+                            <field name="name" />
+                            <field name="active" />
+                            <field name="model_id" widget="selection" />
+                            <field name="domain" widget="domain" options="{'model': 'model_id'}"/>
+                            <field
+                                name="fields"
+                                readonly="not id"
+                                context="{'tree_view_ref' : 'konfoo.view_konfoo_dataset_fields', 'default_dataset_id': context.get('active_id')}"/>
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_konfoo_dataset_field" model="ir.ui.view">
+            <field name="name">konfoo.dataset_field.form</field>
+            <field name="model">konfoo.dataset_field</field>
+            <field name="arch" type="xml">
+                <form string="Dataset Field">
+                    <sheet>
+                        <group>
+                            <field name="name" />
+                            <field name="csv_name" />
+                            <field name="is_unique" />
+                            <field name="is_group" />
+                        </group>
+                    </sheet>
+                </form>
+            </field>
+        </record>
+
+        <record id="view_konfoo_dataset_fields" model="ir.ui.view">
+            <field name="name">konfoo.dataset_field.tree</field>
+            <field name="model">konfoo.dataset_field</field>
+            <field name="arch" type="xml">
+                <tree string="Fields">
+                    <field name="name" widget="text" />
+                    <field name="csv_name" />
+                    <field name="is_unique" />
+                    <field name="is_group" />
+                </tree>
+            </field>
+        </record>
+
+        <record id="view_konfoo_datasets" model="ir.ui.view">
+            <field name="name">konfoo.dataset.tree</field>
+            <field name="model">konfoo.dataset</field>
+            <field name="arch" type="xml">
+                <tree string="Datasets">
+                    <field name="name" />
+                    <field name="model_id" />
+                    <field name="active" />
+                </tree>
+            </field>
+        </record>
+
+        <record id="konfoo.act_datasets" model="ir.actions.act_window">
+            <field name="name">Datasets</field>
+            <field name="res_model">konfoo.dataset</field>
+            <field name="view_mode">tree,form</field>
+            <field name="view_id" ref="view_konfoo_datasets"/>
+            <field name="context">{'in_konfoo_app': True}</field>
+            <field name="help" type="html">
+                <p class="o_view_nocontent_smiling_face">
+                    No datasets
+                </p>
+            </field>
+        </record>
+    </data>
+</odoo>

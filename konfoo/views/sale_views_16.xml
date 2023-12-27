@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="konfoo_view_order_form_inherit" model="ir.ui.view">
+            <field name="name">sale.order.form.inherit.konfoo</field>
+            <field name="model">sale.order</field>
+            <field name="inherit_id" ref="sale.view_order_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//header" position="inside">
+                    <widget name="konfoo-button" />
+                </xpath>
+
+                <xpath expr="//header" position="after">
+                    <widget name="konfoo" />
+                </xpath>
+
+                <!-- <xpath
+                    expr="//notebook/page[@name='order_lines']/field[@name='order_line']/tree/control"
+                    position="inside">
+                    <create name="add_konfoo_product_control" string="Add a configurable product" />
+                </xpath> -->
+
+                <xpath expr="//notebook/page[@name='order_lines']/field[@name='order_line']/tree" position="inside">
+                    <field name="order_id" invisible="1" />
+                    <field name="konfoo_session_id" invisible="1" />
+                    <field name="konfoo_session_key" invisible="1" />
+                    <widget name="konfoo-edit-button" />
+                    <button
+                        attrs="{'invisible': [('konfoo_session_id', '=', False)]}"
+                        name="action_duplicate_konfoo_product"
+                        type="object"
+                        title="Duplicate"
+                        class="fa fa-files-o" />
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
