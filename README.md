@@ -1,3 +1,3 @@
-# konfoo-module
+# konfoo-module 
 
 Konfoo Odoo module
