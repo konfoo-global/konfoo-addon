@@ -25,6 +25,8 @@ Configuration
 Changelog
 =========
 
+- 1.3.0
+    - Improved dynamic selection widget implementation. Previous approach no longer worked due to optimizations in 17.0.
 - 1.2.4
     - Re-hide invisible columns in 17.0
 - 1.2.3

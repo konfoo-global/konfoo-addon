@@ -32,7 +32,7 @@
                             <field
                                 name="fields"
                                 readonly="not id"
-                                context="{'tree_view_ref' : 'konfoo.view_konfoo_dataset_fields', 'default_dataset_id': context.get('active_id')}"/>
+                                context="{'tree_view_ref': 'konfoo.view_konfoo_dataset_fields', 'default_dataset_id': id}"/>
                         </group>
                     </sheet>
                 </form>
@@ -46,7 +46,7 @@
                 <form string="Dataset Field">
                     <sheet>
                         <group>
-                            <field name="name" />
+                            <field name="name" widget="dynamic-selection" />
                             <field name="csv_name" />
                             <field name="is_unique" />
                             <field name="is_group" />
@@ -61,6 +61,7 @@
             <field name="model">konfoo.dataset_field</field>
             <field name="arch" type="xml">
                 <tree string="Fields">
+                    <field name="dataset_id" readonly="1" />
                     <field name="name" widget="text" />
                     <field name="csv_name" />
                     <field name="is_unique" />

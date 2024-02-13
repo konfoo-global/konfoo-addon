@@ -1,23 +1,12 @@
 from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError
+from .dynamic_selection import DynamicSelection
 import re
 
 import logging
 logger = logging.getLogger(__name__)
 
-CSV_COLUMN_NAME_VALIDATOR = re.compile(r'[^\w\d\-_\. ]') # noqa
-
-
-# noinspection PyAbstractClass
-class ModelFieldSelection(fields.Selection):
-    def convert_to_cache(self, value, record, validate=True):
-        if not validate:
-            return value or None
-        if value and self.column_type[0] == 'int4':
-            value = int(value)
-        if not value:
-            return None
-        return value
+CSV_COLUMN_NAME_VALIDATOR = re.compile(r'[^\w\d\-_\. ]')  # noqa
 
 
 class KonfooDatasetField(models.Model):
@@ -28,12 +17,13 @@ class KonfooDatasetField(models.Model):
     ]
 
     dataset_id = fields.Many2one('konfoo.dataset', 'Dataset', required=True)
-    name = ModelFieldSelection(selection='_list_model_fields', string='Name', required=True)
+    name = DynamicSelection(string='Name', required=True, selection_dynamic='list_model_fields')
     csv_name = fields.Char('CSV Column', required=True)
     is_unique = fields.Boolean('Unique Index', required=True)
     is_group = fields.Boolean('Group Index', required=True)
 
-    def _list_model_fields(self):
+    @api.model
+    def list_model_fields(self):
         dataset_id = self.env.context.get('default_dataset_id')
         if not dataset_id:
             return []
