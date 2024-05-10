@@ -92,6 +92,15 @@ export class KonfooComponent extends owl.Component {
                     if (KONFOO_VERBOSE)
                         console.log('[odoo-konfoo] finish:', e.data.params);
 
+                    self.updateState();
+                    if (!self.state.record_id) {
+                        self.notifications.add('Please save the document before clicking Finish in Konfoo.', {
+                            type: 'warning',
+                            title: 'Konfoo',
+                        });
+                        return;
+                    }
+
                     self.rpc('/konfoo/create', {
                         sale_order_id: self.state.record_id,
                         session: e.data.params.session,
@@ -222,47 +231,17 @@ export class KonfooComponent extends owl.Component {
 export class KonfooButtonComponent extends owl.Component {
     static props = { ...standardWidgetProps, };
     static template = owl.xml
-        `<button class="btn btn-primary" t-on-click="open" t-att-disabled="state.disabled">
+        `<button class="btn btn-primary" t-on-click="open">
             <img src="/konfoo/static/src/img/add-product.svg" />
             <span>Konfoo</span>
         </button>`;
 
     setup() {
         super.setup();
-
-        this.state = owl.useState({
-            disabled: true,
-        });
-
-        this.updateState();
-
-        owl.onWillUpdateProps(() => {
-            this.updateState();
-        });
-    }
-
-    updateState() {
-        this.state.disabled = !this.getActiveId();
     }
 
     open() {
         this.env.bus.trigger('KONFOO_OPEN');
-    }
-
-    getActiveId() {
-        if (!this.props || !this.props.record) {
-            return null;
-        }
-
-        // Odoo <= 16.0
-        if (this.props.record.data && 'id' in this.props.record.data && this.props.record.data.id) {
-            return this.props.record.data.id;
-        }
-
-        // Odoo >= 17.0
-        if (this.props.record.evalContext && this.props.record.evalContext.active_id) {
-            return this.props.record.evalContext.active_id;
-        }
     }
 }
 
