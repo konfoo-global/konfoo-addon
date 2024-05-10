@@ -25,6 +25,9 @@ Configuration
 Changelog
 =========
 
+- 1.4.0
+    - Handle Konfoo endpoint connection errors more gracefully
+    - Add a very simple configuration import/export system
 - 1.3.1
     - Add a Settings shortcut to Konfoo application
     - Clean up deprecated data
