@@ -114,14 +114,14 @@ export class KonfooComponent extends owl.Component {
                             return self.props.record.load();
                         }
                     })
-                    // .then(function() {
-                    //     if (KONFOO_VERBOSE)
-                    //         console.log('[odoo-konfoo] Reload OK');
-                    //
-                    //     if (self.props && self.props.record) {
-                    //         return self.props.record.update();
-                    //     }
-                    // })
+                    .then(function() {
+                        // Odoo <= 16.0
+                        if (self.props && self.props.record && self.props.record.data && 'id' in self.props.record.data && self.props.record.data.id) {
+                            if (KONFOO_VERBOSE)
+                                console.log('[odoo-konfoo] Triggering 16.0 record update');
+                            return self.props.record.update();
+                        }
+                    })
                     .then(function() {
                         if (KONFOO_VERBOSE)
                             console.log('[odoo-konfoo] Update OK');

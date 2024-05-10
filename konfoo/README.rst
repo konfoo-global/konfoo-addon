@@ -25,6 +25,8 @@ Configuration
 Changelog
 =========
 
+- 1.4.3
+    - Mitigate record not updated properly in 16.0 when calling `record.load()`
 - 1.4.2
     - Minor improvements to legacy settings view layout
 - 1.4.1
