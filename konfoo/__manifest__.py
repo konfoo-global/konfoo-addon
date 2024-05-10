@@ -1,12 +1,11 @@
 # noinspection PyStatementEffect
 {
     'name': 'Konfoo',
-    'version': '1.3.0',
+    'version': '1.3.1',
     'author': 'Konfoo',
     'website': 'https://konfoo.com',
     'license': 'Other proprietary',
     'data': [
-        # 'data/data.xml',
         'data/cron.xml',
 
         'security/security.xml',
@@ -49,7 +48,6 @@
     'override': {
         '16.0': {
             'data': [
-                # 'data/data.xml',
                 'data/cron.xml',
 
                 'security/security.xml',
