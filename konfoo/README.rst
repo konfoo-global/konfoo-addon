@@ -25,6 +25,8 @@ Configuration
 Changelog
 =========
 
+- 1.4.2
+    - Minor improvements to legacy settings view layout
 - 1.4.1
     - Fix regression in 17.0 where Konfoo button was disabled even after the Sale Order was saved
 - 1.4.0
