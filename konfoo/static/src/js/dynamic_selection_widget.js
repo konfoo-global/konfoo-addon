@@ -18,7 +18,7 @@ export class DynamicSelectionField extends SelectionField {
             return;
         }
 
-        const [ magic, method ] = this.props.record.fields[this.props.name].selection[0];
+        const [ magic, method ] = selection[0];
         if (magic !== 'selection_dynamic') {
             return;
         }

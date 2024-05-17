@@ -25,6 +25,9 @@ Configuration
 Changelog
 =========
 
+- 1.5.0
+    - Added backwards compatibility support for Odoo 15.0
+    - Fix: edit button shown for lines without konfoo session
 - 1.4.3
     - Mitigate record not updated properly in 16.0 when calling `record.load()`
 - 1.4.2
