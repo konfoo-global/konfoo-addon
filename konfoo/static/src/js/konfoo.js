@@ -230,66 +230,11 @@ export class KonfooComponent extends owl.Component {
     }
 }
 
-export class KonfooButtonComponent extends owl.Component {
-    static props = { ...standardWidgetProps, };
-    static template = owl.xml
-        `<button class="btn btn-primary" t-on-click="open">
-            <img src="/konfoo/static/src/img/add-product.svg" />
-            <span>Konfoo</span>
-        </button>`;
-
-    setup() {
-        super.setup();
-    }
-
-    open() {
-        this.env.bus.trigger('KONFOO_OPEN');
-    }
-}
-
-export class KonfooEditButtonComponent extends owl.Component {
-    static props = { ...standardWidgetProps, };
-    static template = owl.xml`<button class="btn fa fa-pencil-square-o btn-link" t-on-click="open"></button>`;
-
-    open() {
-        this.env.bus.trigger('KONFOO_OPEN', {
-            record_id: this.getActiveId(),
-            konfoo_session_key: this.props.record.data.konfoo_session_key,
-        });
-    }
-
-    getActiveId() {
-        if (!this.props || !this.props.record) {
-            return null;
-        }
-
-        // Odoo <= 16.0
-        if (this.props.record.data && 'id' in this.props.record.data && this.props.record.data.id) {
-            return this.props.record.data.id;
-        }
-
-        // Odoo >= 17.0
-        if (this.props.record.evalContext && this.props.record.evalContext.active_id) {
-            return this.props.record.evalContext.active_id;
-        }
-    }
-}
-
 if (isModernComponentInterface) {
     registry.category('view_widgets').add('konfoo', {
         component: KonfooComponent,
     });
-
-    registry.category('view_widgets').add('konfoo-button', {
-        component: KonfooButtonComponent,
-    });
-
-    registry.category('view_widgets').add('konfoo-edit-button', {
-        component: KonfooEditButtonComponent,
-    });
 }
 else {
     registry.category("view_widgets").add("konfoo", KonfooComponent);
-    registry.category("view_widgets").add("konfoo-button", KonfooButtonComponent);
-    registry.category("view_widgets").add("konfoo-edit-button", KonfooEditButtonComponent);
 }

@@ -1,29 +1,25 @@
 /** @odoo-module **/
+// noinspection DuplicatedCode
 
-import { ComponentWrapper, WidgetAdapterMixin } from 'web.OwlCompatibility';
-import Widget from 'web.Widget';
-import widgetRegistry from 'web.widget_registry';
-import { useService, useBus } from "@web/core/utils/hooks";
+import { registry } from '@web/core/registry';
+import { useBus, useService } from '@web/core/utils/hooks';
+import { standardWidgetProps } from '@web/views/widgets/standard_widget_props';
 
-const { xml } = owl.tags;
-const { useState, onWillUnmount, onWillUpdateProps } = owl.hooks;
 const KONFOO_VERBOSE = false;
 
-class KonfooComponent extends owl.Component {
-    // 15.0 qweb requires at least one element to be returned for compilation to succeed.
-    static template = xml`
-        <span>
-            <div class="o_konfoo_container" t-if="state.isOpen">
-                <iframe class="o_konfoo_iframe" t-att-src="state.config.url" t-on-load="onLoad"></iframe>
-            </div>
-        </span>
+export class KonfooComponent extends owl.Component {
+    static props = { ...standardWidgetProps, };
+    static template = owl.xml`
+        <div t-if="state.isOpen" class="o_konfoo_container">
+            <iframe class="o_konfoo_iframe" t-att-src="state.config.url" t-on-load="onLoad"></iframe>
+        </div>
     `;
 
     async setup() {
         this.rpc = useService('rpc');
         this.notifications = useService('notification');
 
-        this.state = useState({
+        this.state = owl.useState({
             isOpen: false,
             config: null,
             iframe: null,
@@ -31,16 +27,16 @@ class KonfooComponent extends owl.Component {
             session_key: null,
         });
 
-        useBus(this.env.bus, 'KONFOO_OPEN', data => {
+        useBus(this.env.bus, 'KONFOO_OPEN', event => {
             if (!this.state.config || !this.state.config.url) {
-                this.notifications.notify({
-                    message: 'Konfoo not configured',
+                this.notifications.add('Konfoo not configured', {
                     type: 'danger',
                     title: 'Konfoo',
                 });
                 return;
             }
 
+            const data = event.detail;
             if (data && data.konfoo_session_key) {
                 this.state.session_key = data.konfoo_session_key;
                 if (KONFOO_VERBOSE)
@@ -94,31 +90,32 @@ class KonfooComponent extends owl.Component {
 
                     self.updateState();
                     if (!self.state.record_id) {
-                        self.notifications.notify({
-                            message: 'Please save the document before clicking Finish in Konfoo.',
+                        self.notifications.add('Please save the document before clicking Finish in Konfoo.', {
                             type: 'warning',
                             title: 'Konfoo',
                         });
                         return;
                     }
 
-                    self.rpc({
-                        route: '/konfoo/create',
-                        params: {
-                            sale_order_id: self.state.record_id,
-                            session: e.data.params.session,
-                        }
+                    self.rpc('/konfoo/create', {
+                        sale_order_id: self.state.record_id,
+                        session: e.data.params.session,
                     })
                     .then(function (_response) {
                         if (KONFOO_VERBOSE)
                             console.log('[odoo-konfoo] Create OK');
 
                         self.close();
-                        if (self.props && self.props.legacyWidgetRef) {
-                            self.props.legacyWidgetRef.trigger_up('reload');
+                        if (self.props && self.props.record) {
+                            return self.props.record.load();
                         }
-                        else {
-                            console.warn('Legacy Widget API not available (15.0) - please report this to Konfoo support');
+                    })
+                    .then(function() {
+                        // Odoo <= 16.0
+                        if (self.props && self.props.record && self.props.record.data && 'id' in self.props.record.data && self.props.record.data.id) {
+                            if (KONFOO_VERBOSE)
+                                console.log('[odoo-konfoo] Triggering 16.0 record update');
+                            return self.props.record.update();
                         }
                     })
                     .then(function() {
@@ -130,24 +127,14 @@ class KonfooComponent extends owl.Component {
                             console.log('[odoo-konfoo] Error on finish:', JSON.stringify(err));
 
                         if (typeof(err) === 'object' && err.data) {
-                            self.notifications.notify({
-                                message: err.data.message,
-                                type: 'danger',
-                                title: 'Konfoo',
-                                sticky: true,
-                            });
-                        }
-                        else if (typeof(err) === 'object' && err.legacy) {
-                            self.notifications.notify({
-                                message: err.message.data.message,
+                            self.notifications.add(err.data.message, {
                                 type: 'danger',
                                 title: 'Konfoo',
                                 sticky: true,
                             });
                         }
                         else {
-                            self.notifications.notify({
-                                message: err,
+                            self.notifications.add(err, {
                                 type: 'danger',
                                 title: 'Konfoo',
                                 sticky: true,
@@ -162,27 +149,24 @@ class KonfooComponent extends owl.Component {
 
         window.addEventListener('message', onMessage);
 
-        onWillUnmount(() => {
+        owl.onWillUnmount(() => {
             if (KONFOO_VERBOSE)
                 console.log('[odoo-konfoo] unmounting');
             window.removeEventListener('message', onMessage);
         });
 
-        onWillUpdateProps(() => {
+        owl.onWillUpdateProps(() => {
             this.updateState();
         });
 
         this.updateState();
 
-        const clientConfig = await this.rpc({
-            route: '/konfoo-client',
-        });
+        const clientConfig = await this.rpc('/konfoo-client');
         if ('ok' in clientConfig && clientConfig.ok === true) {
             this.state.config = clientConfig;
         }
         else if ('error' in clientConfig) {
-            this.notifications.notify({
-                message: clientConfig.error,
+            this.notifications.add(clientConfig.error, {
                 type: 'danger',
                 title: 'Konfoo',
             });
@@ -196,7 +180,6 @@ class KonfooComponent extends owl.Component {
     }
 
     onLoad(event) {
-        const iframe = event.target;
         this.state.iframe = event.target;
         if (KONFOO_VERBOSE)
             console.log('[odoo-konfoo] iframe loaded: %s', this.state.iframe ? 'OK' : 'NOT OK');
@@ -205,9 +188,10 @@ class KonfooComponent extends owl.Component {
             return;
         }
 
-        iframe.classList.add('o_konfoo_loaded');
+        // TODO: add this to parent so the entire thing transitions
+        this.state.iframe.classList.add('o_konfoo_loaded');
 
-        iframe.contentWindow.postMessage({
+        this.state.iframe.contentWindow.postMessage({
             type: 'konfoo',
             cmd: 'hello',
             params: {
@@ -226,43 +210,20 @@ class KonfooComponent extends owl.Component {
     }
 
     getActiveId() {
-        if (!this.props) {
+        if (!this.props || !this.props.record) {
             return null;
         }
-        return this.props.res_id;
+
+        // Odoo <= 16.0
+        if (this.props.record.data && 'id' in this.props.record.data && this.props.record.data.id) {
+            return this.props.record.data.id;
+        }
+
+        // Odoo >= 17.0
+        if (this.props.record.evalContext && this.props.record.evalContext.active_id) {
+            return this.props.record.evalContext.active_id;
+        }
     }
 }
 
-class KonfooComponentWrapper extends ComponentWrapper {}
-
-const KonfooWidget = Widget.extend(WidgetAdapterMixin, {
-    /**
-     * @override
-     */
-    init(parent, props) {
-        this._super(...arguments);
-        this.props = {
-            ...props,
-            legacyWidgetRef: this
-        };
-        this.component = undefined;
-    },
-
-    /**
-     * @override
-     */
-    async start() {
-        await this._super(...arguments);
-
-        this.component = new KonfooComponentWrapper(
-            this,
-            KonfooComponent,
-            this.props
-        );
-
-        await this.component.mount(this.el);
-    },
-});
-
-widgetRegistry.add('konfoo', KonfooWidget);
-export default KonfooWidget;
+registry.category("view_widgets").add("konfoo", KonfooComponent);

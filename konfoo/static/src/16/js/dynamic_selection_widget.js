@@ -1,10 +1,9 @@
 /** @odoo-module **/
 // noinspection DuplicatedCode
 
-import {useState} from "@odoo/owl";
-import { _t } from "@web/core/l10n/translation";
 import { registry } from "@web/core/registry";
-import { SelectionField, selectionField } from "@web/views/fields/selection/selection_field";
+import { SelectionField } from "@web/views/fields/selection/selection_field";
+const { useState } = owl;
 
 export class DynamicSelectionField extends SelectionField {
     async setup() {
@@ -37,11 +36,8 @@ export class DynamicSelectionField extends SelectionField {
     }
 }
 
-export const dynamicSelectionField = {
-    ...selectionField,
-    component: DynamicSelectionField,
-    displayName: _t("Dynamic Selection"),
-    supportedTypes: ["selection"],
+DynamicSelectionField.props = {
+    ...SelectionField.props,
 };
 
-registry.category("fields").add("dynamic-selection", dynamicSelectionField);
+registry.category("fields").add("dynamic-selection", DynamicSelectionField);

@@ -30,8 +30,7 @@
     'assets': {
         'web.assets_backend': [
             'konfoo/static/src/js/*.js',
-            'konfoo/static/src/**/*.css',
-            'konfoo/static/src/**/*.xml',
+            'konfoo/static/src/css/*.css',
         ],
         # 'web.assets_qweb': [
         #     'konfoo/static/src/**/*.xml',
@@ -62,6 +61,12 @@
 
                 'views/res_config_settings_views_legacy.xml',  # settings block for <= 16.0
             ],
+            'assets': {
+                'web.assets_backend': [
+                    'konfoo/static/src/16/js/*.js',
+                    'konfoo/static/src/css/*.css',
+                ],
+            },
         },
 
         '15.0': {
@@ -91,8 +96,7 @@
             'assets': {
                 'web.assets_backend': [
                     'konfoo/static/src/15/js/*.js',
-                    'konfoo/static/src/**/*.css',
-                    'konfoo/static/src/**/*.xml',
+                    'konfoo/static/src/css/*.css',
                 ],
             },
         },
