@@ -19,7 +19,7 @@
                         </div>
                         <div class="col-12 col-lg-6 o_setting_box" id="konfoo_default_uom_id">
                             <div class="o_setting_right_pane">
-                                <label for="konfoo_default_uom_id" string="Default UOM"/>
+                                <label for="konfoo_default_uom_id" string="Default UOM"/><br />
                                 <field name="konfoo_default_uom_id"/>
                             </div>
                         </div>
@@ -37,20 +37,24 @@
                     <div class="row mt16 o_settings_container">
                         <div class="col-12 col-lg-6 o_setting_box">
                             <div class="o_setting_right_pane">
-                                <label for="konfoo_url_staging" string="Konfoo URL"/>
-                                <field name="konfoo_url_staging"/>
+                                <group>
+                                    <field name="konfoo_url_staging"/>
+                                </group>
                             </div>
                             <div class="o_setting_right_pane">
-                                <label for="konfoo_client_id_staging" string="Konfoo Client ID"/>
-                                <field name="konfoo_client_id_staging"/>
+                                <group>
+                                    <field name="konfoo_client_id_staging"/>
+                                </group>
                             </div>
                             <div class="o_setting_right_pane">
-                                <label for="konfoo_sync_host_staging" string="Konfoo Sync URL"/>
-                                <field name="konfoo_sync_host_staging"/>
+                                <group>
+                                    <field name="konfoo_sync_host_staging"/>
+                                </group>
                             </div>
                             <div class="o_setting_right_pane">
-                                <label for="konfoo_sync_key_staging" string="Konfoo Sync Key"/>
-                                <field name="konfoo_sync_key_staging"/>
+                                <group>
+                                    <field name="konfoo_sync_key_staging"/>
+                                </group>
                             </div>
                         </div>
                         <div class="col-12 col-lg-6 o_setting_box">
@@ -69,20 +73,24 @@
                     <div class="row mt16 o_settings_container">
                         <div class="col-12 col-lg-6 o_setting_box">
                             <div class="o_setting_right_pane">
-                                <label for="konfoo_url" string="Konfoo URL"/>
-                                <field name="konfoo_url"/>
+                                <group>
+                                    <field name="konfoo_url"/>
+                                </group>
                             </div>
                             <div class="o_setting_right_pane">
-                                <label for="konfoo_client_id" string="Konfoo Client ID"/>
-                                <field name="konfoo_client_id"/>
+                                <group>
+                                    <field name="konfoo_client_id"/>
+                                </group>
                             </div>
                             <div class="o_setting_right_pane">
-                                <label for="konfoo_sync_host" string="Konfoo Sync URL"/>
-                                <field name="konfoo_sync_host"/>
+                                <group>
+                                    <field name="konfoo_sync_host"/>
+                                </group>
                             </div>
                             <div class="o_setting_right_pane">
-                                <label for="konfoo_sync_key" string="Konfoo Sync Key"/>
-                                <field name="konfoo_sync_key"/>
+                                <group>
+                                    <field name="konfoo_sync_key"/>
+                                </group>
                             </div>
                         </div>
                         <div class="col-12 col-lg-6 o_setting_box">
@@ -93,6 +101,18 @@
                                     type="object"
                                     groups="konfoo.group_konfoo_admin"
                                     class="oe_highlight" />
+                            </div>
+                        </div>
+                    </div>
+
+                    <h2>Advanced</h2>
+                    <div class="row mt16 o_settings_container">
+                        <div class="col-12 col-lg-6 o_setting_box">
+                            <div class="o_setting_right_pane">
+                                <label for="konfoo_config_blob" string="Auto Configuration"/>
+                                <br />
+                                <br />
+                                <field name="konfoo_config_blob" widget="CopyClipboardChar" />
                             </div>
                         </div>
                     </div>

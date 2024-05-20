@@ -349,7 +349,7 @@ class KonfooAPI(models.AbstractModel):
             logger.error('Error: %s', err)
             logger.info('Caused by this create object: %s', create)
             raise UserError(_(
-                'Konfoo encountered invalid input from rule %s\n%s',
+                'Invalid input from rule "%s":\n%s',
                 line.get('__id__', _('Unknown')),
                 err
             ))

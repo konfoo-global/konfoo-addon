@@ -24,7 +24,7 @@
                     <field name="order_id" invisible="1" />
                     <field name="konfoo_session_id" invisible="1" column_invisible="1" />
                     <field name="konfoo_session_key" invisible="1" column_invisible="1" />
-                    <widget name="konfoo-edit-button" />
+                    <widget name="konfoo-edit-button" invisible="not konfoo_session_id" />
                     <button
                         invisible="not konfoo_session_id"
                         name="action_duplicate_konfoo_product"

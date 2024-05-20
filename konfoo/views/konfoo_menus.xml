@@ -1,5 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
+    <record id="act_settings" model="ir.actions.act_window">
+        <field name="name">Konfoo Settings</field>
+        <field name="res_model">res.config.settings</field>
+        <field name="view_mode">form</field>
+        <field name="target">inline</field>
+        <field name="context">{'module': 'konfoo'}</field>
+    </record>
+
     <menuitem id="konfoo_menu_root"
         name="Konfoo"
         web_icon="konfoo,static/description/icon-raised.png" />
@@ -17,24 +25,31 @@
         parent="konfoo_menu_root"
         sequence="10"/>
 
-    <menuitem id="konfoo_sessions_menu"
-        name="Sessions"
+    <menuitem id="konfoo_config_menu"
+        name="Settings"
         groups="konfoo.group_konfoo_admin"
         parent="konfoo_tech_menu"
-        action="konfoo.act_sessions"
-        sequence="1"/>
-
-    <menuitem id="konfoo_cache_menu"
-        name="Sync Cache"
-        groups="konfoo.group_konfoo_admin"
-        parent="konfoo_tech_menu"
-        action="konfoo.act_dataset_objects"
-        sequence="2"/>
+        action="konfoo.act_settings"
+        sequence="10"/>
 
     <menuitem id="konfoo_allowed_models_menu"
         name="Allowed models"
         groups="konfoo.group_konfoo_admin"
         parent="konfoo_tech_menu"
         action="konfoo.act_allowed_models"
-        sequence="3"/>
+        sequence="11"/>
+
+    <menuitem id="konfoo_sessions_menu"
+        name="Sessions"
+        groups="konfoo.group_konfoo_admin"
+        parent="konfoo_tech_menu"
+        action="konfoo.act_sessions"
+        sequence="20"/>
+
+    <menuitem id="konfoo_cache_menu"
+        name="Sync Cache"
+        groups="konfoo.group_konfoo_admin"
+        parent="konfoo_tech_menu"
+        action="konfoo.act_dataset_objects"
+        sequence="21"/>
 </odoo>
