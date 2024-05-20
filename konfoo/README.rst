@@ -25,6 +25,25 @@ Configuration
 Changelog
 =========
 
+- 1.5.0
+    - Added backwards compatibility support for Odoo 15.0
+    - Fix: edit button shown for lines without konfoo session
+    - Split KonfooButton and KonfooEditButton components into separate files
+    - Forked 16.0 compatibly components from mainline component
+- 1.4.3
+    - Mitigate record not updated properly in 16.0 when calling `record.load()`
+- 1.4.2
+    - Minor improvements to legacy settings view layout
+- 1.4.1
+    - Fix regression in 17.0 where Konfoo button was disabled even after the Sale Order was saved
+- 1.4.0
+    - Handle Konfoo endpoint connection errors more gracefully
+    - Add a very simple configuration import/export system
+- 1.3.1
+    - Add a Settings shortcut to Konfoo application
+    - Clean up deprecated data
+- 1.3.0
+    - Improved dynamic selection widget implementation. Previous approach no longer worked due to optimizations in 17.0.
 - 1.2.4
     - Re-hide invisible columns in 17.0
 - 1.2.3

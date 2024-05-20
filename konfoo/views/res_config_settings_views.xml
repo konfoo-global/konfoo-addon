@@ -69,6 +69,10 @@
                             help="The maximum number of records synced in one batch. If not specified 100 is used.">
                             <field name="konfoo_sync_batch_size" />
                         </setting>
+                        <setting
+                            id="setting_konfoo_config_import_export">
+                            <field name="konfoo_config_blob" widget="CopyClipboardChar" />
+                        </setting>
                     </block>
                 </app>
             </xpath>

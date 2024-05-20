@@ -92,6 +92,15 @@ export class KonfooComponent extends owl.Component {
                     if (KONFOO_VERBOSE)
                         console.log('[odoo-konfoo] finish:', e.data.params);
 
+                    self.updateState();
+                    if (!self.state.record_id) {
+                        self.notifications.add('Please save the document before clicking Finish in Konfoo.', {
+                            type: 'warning',
+                            title: 'Konfoo',
+                        });
+                        return;
+                    }
+
                     self.rpc('/konfoo/create', {
                         sale_order_id: self.state.record_id,
                         session: e.data.params.session,
@@ -105,14 +114,14 @@ export class KonfooComponent extends owl.Component {
                             return self.props.record.load();
                         }
                     })
-                    // .then(function() {
-                    //     if (KONFOO_VERBOSE)
-                    //         console.log('[odoo-konfoo] Reload OK');
-                    //
-                    //     if (self.props && self.props.record) {
-                    //         return self.props.record.update();
-                    //     }
-                    // })
+                    .then(function() {
+                        // Odoo <= 16.0
+                        if (self.props && self.props.record && self.props.record.data && 'id' in self.props.record.data && self.props.record.data.id) {
+                            if (KONFOO_VERBOSE)
+                                console.log('[odoo-konfoo] Triggering 16.0 record update');
+                            return self.props.record.update();
+                        }
+                    })
                     .then(function() {
                         if (KONFOO_VERBOSE)
                             console.log('[odoo-konfoo] Update OK');
@@ -125,12 +134,14 @@ export class KonfooComponent extends owl.Component {
                             self.notifications.add(err.data.message, {
                                 type: 'danger',
                                 title: 'Konfoo',
+                                sticky: true,
                             });
                         }
                         else {
                             self.notifications.add(err, {
                                 type: 'danger',
                                 title: 'Konfoo',
+                                sticky: true,
                             });
                         }
                     });
@@ -219,96 +230,11 @@ export class KonfooComponent extends owl.Component {
     }
 }
 
-export class KonfooButtonComponent extends owl.Component {
-    static props = { ...standardWidgetProps, };
-    static template = owl.xml
-        `<button class="btn btn-primary" t-on-click="open" t-att-disabled="state.disabled">
-            <img src="/konfoo/static/src/img/add-product.svg" />
-            <span>Konfoo</span>
-        </button>`;
-
-    setup() {
-        super.setup();
-
-        this.state = owl.useState({
-            disabled: true,
-        });
-
-        this.updateState();
-
-        owl.onWillUpdateProps(() => {
-            this.updateState();
-        });
-    }
-
-    updateState() {
-        this.state.disabled = !this.getActiveId();
-    }
-
-    open() {
-        this.env.bus.trigger('KONFOO_OPEN');
-    }
-
-    getActiveId() {
-        if (!this.props || !this.props.record) {
-            return null;
-        }
-
-        // Odoo <= 16.0
-        if (this.props.record.data && 'id' in this.props.record.data && this.props.record.data.id) {
-            return this.props.record.data.id;
-        }
-
-        // Odoo >= 17.0
-        if (this.props.record.evalContext && this.props.record.evalContext.active_id) {
-            return this.props.record.evalContext.active_id;
-        }
-    }
-}
-
-export class KonfooEditButtonComponent extends owl.Component {
-    static props = { ...standardWidgetProps, };
-    static template = owl.xml`<button class="btn fa fa-pencil-square-o btn-link" t-on-click="open"></button>`;
-
-    open() {
-        this.env.bus.trigger('KONFOO_OPEN', {
-            record_id: this.getActiveId(),
-            konfoo_session_key: this.props.record.data.konfoo_session_key,
-        });
-    }
-
-    getActiveId() {
-        if (!this.props || !this.props.record) {
-            return null;
-        }
-
-        // Odoo <= 16.0
-        if (this.props.record.data && 'id' in this.props.record.data && this.props.record.data.id) {
-            return this.props.record.data.id;
-        }
-
-        // Odoo >= 17.0
-        if (this.props.record.evalContext && this.props.record.evalContext.active_id) {
-            return this.props.record.evalContext.active_id;
-        }
-    }
-}
-
 if (isModernComponentInterface) {
     registry.category('view_widgets').add('konfoo', {
         component: KonfooComponent,
     });
-
-    registry.category('view_widgets').add('konfoo-button', {
-        component: KonfooButtonComponent,
-    });
-
-    registry.category('view_widgets').add('konfoo-edit-button', {
-        component: KonfooEditButtonComponent,
-    });
 }
 else {
     registry.category("view_widgets").add("konfoo", KonfooComponent);
-    registry.category("view_widgets").add("konfoo-button", KonfooButtonComponent);
-    registry.category("view_widgets").add("konfoo-edit-button", KonfooEditButtonComponent);
 }
