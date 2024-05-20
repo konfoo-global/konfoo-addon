@@ -35,6 +35,7 @@ jobs:
         run: |
           git config --global user.name 'Automation'
           git config --global user.email 'info@konfoo.com'
+          git config --global --add safe.directory $(pwd)
       - name: Build release
         run: /opt/release.sh
       - name: Push changes
@@ -60,6 +61,7 @@ jobs:
         run: |
           git config --global user.name 'Automation'
           git config --global user.email 'info@konfoo.com'
+          git config --global --add safe.directory $(pwd)
       - name: Build release
         run: /opt/release.sh
       - name: Push changes
@@ -85,6 +87,7 @@ jobs:
         run: |
           git config --global user.name 'Automation'
           git config --global user.email 'info@konfoo.com'
+          git config --global --add safe.directory $(pwd)
       - name: Build release
         run: /opt/release.sh
       - name: Push changes
