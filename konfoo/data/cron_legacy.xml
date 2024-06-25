@@ -5,6 +5,8 @@
             <field name="name">Konfoo - Sync datasets</field>
             <field name="interval_number">60</field>
             <field name="interval_type">minutes</field>
+            <field name="numbercall">-1</field>
+            <field name="doall" eval="False" />
             <field name="model_id" ref="model_konfoo_sync" />
             <field name="state">code</field>
             <field name="code">model.cron_push_datasets()</field>

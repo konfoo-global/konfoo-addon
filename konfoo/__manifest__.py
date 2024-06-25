@@ -1,12 +1,12 @@
 # noinspection PyStatementEffect
 {
     'name': 'Konfoo',
-    'version': '1.5.0',
+    'version': '1.5.2',
     'author': 'Konfoo',
     'website': 'https://konfoo.com',
     'license': 'Other proprietary',
     'data': [
-                'data/cron.xml',
+                'data/cron_legacy.xml',
 
                 'security/security.xml',
                 'security/ir.model.access.csv',
@@ -42,9 +42,26 @@
     ],
 
     'override': {
+        '17.0': {
+            'data': [
+                'data/cron_legacy.xml',
+
+                'security/security.xml',
+                'security/ir.model.access.csv',
+
+                'views/konfoo_dataset.xml',
+                'views/konfoo_cache.xml',
+                'views/konfoo_session.xml',
+                'views/konfoo_allowed_model.xml',
+                'views/konfoo_menus.xml',
+                'views/sale_views.xml',
+
+                'views/res_config_settings_views.xml',
+            ],
+        },
         '16.0': {
             'data': [
-                'data/cron.xml',
+                'data/cron_legacy.xml',
 
                 'security/security.xml',
                 'security/ir.model.access.csv',
@@ -76,7 +93,7 @@
                 'uom',
             ],
             'data': [
-                'data/cron.xml',
+                'data/cron_legacy.xml',
 
                 'security/security.xml',
                 'security/ir.model.access.csv',
