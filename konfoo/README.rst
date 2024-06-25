@@ -25,6 +25,8 @@ Configuration
 Changelog
 =========
 
+- 1.5.2
+    - Make app visible only to Konfoo user & admin groups
 - 1.5.1
     - Cron `numbercall` and `doall` fields removed in Odoo >17.0
 - 1.5.0
