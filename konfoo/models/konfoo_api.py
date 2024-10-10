@@ -1,10 +1,15 @@
 from odoo import api, models, _
 from odoo.exceptions import UserError, ValidationError
+from odoo.tools.safe_eval import safe_eval
+from odoo.tools.misc import OrderedSet
 from os import environ
 from urllib.parse import urljoin
 from requests.exceptions import RequestException
+import types
 import json
 import requests
+import ast
+import re
 
 import logging
 logger = logging.getLogger(__name__)
@@ -30,6 +35,18 @@ def is_production():
 def make_cache_key(rule_id, instance_id):
     return '{}-{}'.format(rule_id, instance_id)
 
+def is_valid_method(model, method):
+    return type(getattr(model, method, None)) == types.MethodType
+
+def safe_eval_objects(eval_str, objects_map, instance_id):
+    domain_variables = dict()
+    for node in ast.walk(ast.parse(eval_str)):
+        if not isinstance(node, ast.Name):
+            continue
+        instance_object = objects_map.get(make_cache_key(node.id, instance_id))
+        domain_variables[node.id] = getattr(instance_object, 'id', 0)
+    return safe_eval(eval_str, domain_variables)
+
 
 class KonfooLookupDom(object):
     target_field = None
@@ -43,6 +60,19 @@ class KonfooLookupDom(object):
 
     def search(self, value):
         return self.lookup_model.search([(self.lookup_field, '=', value)], limit=1)
+
+class KonfooLookupSearch(object):
+    lookup_model = None
+    lookup_domain = None
+    lookup_kwargs = None
+
+    def __init__(self, lookup_model, lookup_domain, lookup_kwargs=None):
+        self.lookup_model = lookup_model
+        self.lookup_domain = lookup_domain
+        self.lookup_kwargs = lookup_kwargs
+
+    def search(self):
+        return self.lookup_model.search(self.lookup_domain, **self.lookup_kwargs)
 
 
 class KonfooLookupReference(object):
@@ -301,7 +331,7 @@ class KonfooAPI(models.AbstractModel):
 
         allowed_models = self.allowed_models()
         map_created_objects = dict()
-        created = list()
+        processed_objects = OrderedSet()
 
         for line in agg_data['data']:
             if '__id__' not in line:
@@ -314,7 +344,7 @@ class KonfooAPI(models.AbstractModel):
 
             line_model = line['model']
             if line_model not in allowed_models:
-                logger.warning('Received BOM line disallowed model: %s', line_model)
+                logger.warning('Received BOM line with disallowed model: %s', line_model)
                 continue
 
             if parent:
@@ -325,9 +355,9 @@ class KonfooAPI(models.AbstractModel):
                 line.get('__id__'), line_model, line.get('__instance__', 'anon'))
 
             obj = self.process_aggregated_data_line(line, bom.id, map_created_objects=map_created_objects)
-            created.append(obj)
+            processed_objects.add(obj)
 
-        return bom, created
+        return bom, list(processed_objects)
 
     @api.model
     def process_aggregated_data_line(self, line, bom_id, map_created_objects=None):
@@ -335,19 +365,27 @@ class KonfooAPI(models.AbstractModel):
         if line['model'] in ('mrp.bom.line', 'mrp.routing.workcenter'):
             additional_data = dict(bom_id=bom_id)
 
-        model, create, template_object = self.process_agg_line_struct(line, additional_data, map_created_objects)
+        model, values, object, method = self.process_agg_line_struct(line, additional_data, map_created_objects)
         # noinspection PyBroadException
         try:
-            obj = self.create_object(model, create, template_object)
-            if map_created_objects is not None:
-                map_created_objects[make_cache_key(line['__id__'], line.get('__instance__', 'anon'))] = obj
-            return obj
+            match method:
+                case 'create':
+                    created_object = self.create_object(model, values, object)
+                    if map_created_objects is not None:
+                        map_created_objects[make_cache_key(line['__id__'], line.get('__instance__', 'anon'))] = created_object
+                    return created_object
+                case 'write':
+                    object.write(values)
+                    return object
+                case _:
+                    getattr(object, method)(**values)
+                    return object
         except Exception as err:
             logger.error(
-                'Failed to create object from rule: %s (model=%s, instance=%s)',
+                'Failed to execute rule: %s (model=%s, instance=%s)',
                 line.get('__id__'), line.get('model'), line.get('__instance__', 'anon'))
             logger.error('Error: %s', err)
-            logger.info('Caused by this create object: %s', create)
+            logger.info('Caused by values/kwargs: %s', values)
             raise UserError(_(
                 'Invalid input from rule "%s":\n%s',
                 line.get('__id__', _('Unknown')),
@@ -356,14 +394,34 @@ class KonfooAPI(models.AbstractModel):
 
     @api.model
     def process_agg_line_struct(self, data, additional_data=None, map_created_objects=None):
-        reserved = ('__id__', '__instance__', 'model')
+        reserved = ('__id__', '__instance__', 'model', 'command', 'method', 'records')
 
         line_instance_id = data.get('__instance__', 'anon')
         line_model = data.get('model')
         if not line_model or line_model not in self.env or line_model not in self.allowed_models():
             raise ValidationError(_('Aggregator line references invalid model: "%s"', line_model))
 
-        template_object = None
+        line_command = data.get('command', 'create')
+        line_method = data.get('method')
+        if line_command and line_command not in ['create', 'write', 'rpc']:
+            raise ValidationError(_('Aggregator line references invalid command: "%s"', line_command))
+        if line_command == 'rpc' and not (line_method and is_valid_method(self.env[line_model], line_method)):
+            raise ValidationError(_('Aggregator line references invalid method: "%s"', line_method))
+        elif line_command != 'rpc':
+            line_method = line_command
+
+        model_objects = None  # Template for create or recordset for other commands
+
+        line_records = data.get('records')
+        if line_records:
+            lookup = self.parse_records_search(line_model, line_records, line_instance_id, map_created_objects)
+            if lookup is not None:
+                model_objects = lookup.search()
+            if not model_objects:
+                raise ValidationError(
+                    _('Could not find recordset of model "%s" by "%s"',
+                      lookup.lookup_model._name, lookup.lookup_domain))
+
         create = dict()
         if additional_data and isinstance(additional_data, dict):
             create.update(additional_data)
@@ -378,12 +436,12 @@ class KonfooAPI(models.AbstractModel):
                     continue
 
                 record = lookup.search(value)
-                if lookup.target_field == 'template':
+                if line_command == 'create' and lookup.target_field == 'template':
                     if not record:
                         raise ValidationError(
                             _('Could not find template object of model "%s" by "%s" = "%s"',
                               lookup.lookup_model, lookup.lookup_field, value))
-                    template_object = record
+                    model_objects = record
                 else:
                     create[lookup.target_field] = record.id if record else None
                 continue
@@ -411,7 +469,7 @@ class KonfooAPI(models.AbstractModel):
             # All other keys are handled as static
             create[key] = value
 
-        return self.env[line_model], create, template_object
+        return self.env[line_model], create, model_objects, line_method
 
     @api.model
     def create_object(self, model, create, template_object=None):
@@ -474,6 +532,22 @@ class KonfooAPI(models.AbstractModel):
             return None
 
         return KonfooLookupReference(target_field, obj, lookup_ref)
+
+    @api.model
+    def parse_records_search(self, model, value, instance_id, map_created_objects):
+        if isinstance(value, int):
+            return KonfooLookupSearch(self.env[model], [('id', '=', value)], dict())
+
+        # Expected input "(search) [domain] {kwargs}"
+        parsed = re.search(r'^(\(search\))(?: )(\[.*?\])(?: )?(\{.*?\})?', str(value))
+        if not parsed:
+            return None
+
+        (lookup_prefix, lookup_domain, lookup_kwargs) = parsed.groups()
+        domain = safe_eval_objects(lookup_domain, map_created_objects, instance_id)
+        kwargs = safe_eval(lookup_kwargs) if lookup_kwargs else dict()
+
+        return KonfooLookupSearch(self.env[model], domain, kwargs)
 
     @api.model
     def find_product_by_field(self, field, value):
