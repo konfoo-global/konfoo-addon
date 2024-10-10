@@ -66,7 +66,7 @@ class KonfooLookupSearch(object):
     lookup_domain = None
     lookup_kwargs = None
 
-    def __init__(self, lookup_model, lookup_domain, lookup_kwargs=None):
+    def __init__(self, lookup_model, lookup_domain, lookup_kwargs=dict()):
         self.lookup_model = lookup_model
         self.lookup_domain = lookup_domain
         self.lookup_kwargs = lookup_kwargs
@@ -536,7 +536,7 @@ class KonfooAPI(models.AbstractModel):
     @api.model
     def parse_records_search(self, model, value, instance_id, map_created_objects):
         if isinstance(value, int):
-            return KonfooLookupSearch(self.env[model], [('id', '=', value)], dict())
+            return KonfooLookupSearch(self.env[model], [('id', '=', value)])
 
         # Expected input "(search) [domain] {kwargs}"
         parsed = re.search(r'^(\(search\))(?: )(\[.*?\])(?: )?(\{.*?\})?', str(value))
