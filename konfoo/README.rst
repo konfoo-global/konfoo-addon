@@ -25,6 +25,8 @@ Configuration
 Changelog
 =========
 
+- 1.6.0
+    - Add ability to update objects and make RPC calls via Konfoo aggregator rules
 - 1.5.2
     - Make app visible only to Konfoo user & admin groups
 - 1.5.1
