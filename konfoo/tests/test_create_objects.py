@@ -28,7 +28,7 @@ class TestKonfooCreateObjects(TransactionCase):
             }
         """)
 
-        model, create, template_object = konfoo.process_agg_line_struct(data)
+        model, create, template_object, method = konfoo.process_agg_line_struct(data)
         self.assertEqual(model, self.env['product.product'])
         self.assertDictEqual(create, dict(name='My Product', barcode='1234567890'))
         self.assertEqual(template_object, template_product)
@@ -67,7 +67,7 @@ class TestKonfooCreateObjects(TransactionCase):
             }
         """)
 
-        model, create, template_object = konfoo.process_agg_line_struct(data, additional_data=dict(bom_id=bom.id))
+        model, create, template_object, method = konfoo.process_agg_line_struct(data, additional_data=dict(bom_id=bom.id))
         self.assertEqual(model, self.env['mrp.bom.line'])
         self.assertEqual(template_object, None)
         self.assertSetEqual(set(create.keys()), {'bom_id', 'product_id', 'product_qty', 'product_uom_id'})
@@ -108,7 +108,7 @@ class TestKonfooCreateObjects(TransactionCase):
             }
         """)
 
-        model, create, template_object = konfoo.process_agg_line_struct(data, additional_data=dict(bom_id=bom.id))
+        model, create, template_object, method = konfoo.process_agg_line_struct(data, additional_data=dict(bom_id=bom.id))
         self.assertEqual(model, self.env['mrp.routing.workcenter'])
         self.assertIsNone(template_object)
         self.assertSetEqual(set(create.keys()), {'bom_id', 'workcenter_id', 'name', 'time_cycle_manual'})
