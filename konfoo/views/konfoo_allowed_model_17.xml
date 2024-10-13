@@ -19,17 +19,17 @@
             <field name="name">konfoo.allowed.model.tree</field>
             <field name="model">konfoo.allowed.model</field>
             <field name="arch" type="xml">
-                <list string="Allowed models">
+                <tree string="Allowed models">
                     <field name="model" />
                     <field name="model" widget="text" string="Technical name" />
-                </list>
+                </tree>
             </field>
         </record>
 
         <record id="konfoo.act_allowed_models" model="ir.actions.act_window">
             <field name="name">Allowed models</field>
             <field name="res_model">konfoo.allowed.model</field>
-            <field name="view_mode">list,form</field>
+            <field name="view_mode">tree,form</field>
             <field name="view_id" ref="view_konfoo_allowed_models"/>
             <field name="context">{'in_konfoo_app': True}</field>
             <field name="help" type="html">

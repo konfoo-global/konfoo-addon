@@ -1,4 +1,5 @@
 from odoo.tests import TransactionCase, tagged
+from odoo.release import version_info
 import json
 
 import logging
@@ -23,17 +24,28 @@ class TestKonfooMetadata(TransactionCase):
             'name': 'Mock Partner',
         })
 
-        self.env['product.product'].create({
-            'name': '[MOCK] Product',
-            'type': 'product',
-            'default_code': 'MOCK-PRODUCT'
-        })
-
-        self.env['product.product'].create({
-            'name': '[MOCK] Konfoo Template',
-            'type': 'product',
-            'default_code': 'MOCK-KONFOO-TEMPLATE'
-        })
+        if version_info[:2] < (18, 0):
+            self.env['product.product'].create({
+                'name': '[MOCK] Product',
+                'type': 'product',
+                'default_code': 'MOCK-PRODUCT'
+            })
+            self.env['product.product'].create({
+                'name': '[MOCK] Konfoo Template',
+                'type': 'product',
+                'default_code': 'MOCK-KONFOO-TEMPLATE'
+            })
+        else:
+            self.env['product.product'].create({
+                'name': '[MOCK] Product',
+                'is_storable': True,
+                'default_code': 'MOCK-PRODUCT'
+            })
+            self.env['product.product'].create({
+                'name': '[MOCK] Konfoo Template',
+                'is_storable': True,
+                'default_code': 'MOCK-KONFOO-TEMPLATE'
+            })
 
         data = json.loads("""
             {

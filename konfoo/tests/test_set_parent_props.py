@@ -1,5 +1,6 @@
 from odoo.tests import TransactionCase, tagged, Form
 from odoo import fields, release
+from odoo.release import version_info
 from odoo.addons.konfoo.models.konfoo_api import make_cache_key # noqa
 import json
 
@@ -32,18 +33,23 @@ TEST_BOM_DATA = json.loads("""
 @tagged('-at_install', 'post_install')
 class TestKonfooSetParentProps(TransactionCase):
 
+    def _create_mock_product(self, values):
+        if version_info[:2] < (18, 0):
+            values['type'] = 'product'
+        else:
+            values['is_storable'] = True
+        return self.env['product.product'].create(values)
+
     def setUp(self):
         super().setUp()
 
-        self.template_product = self.env['product.product'].create({
+        self.template_product = self._create_mock_product({
             'name': '[MOCK] Product Template',
-            'type': 'product',
             'default_code': 'KONFOO-TEMPLATE'
         })
 
-        self.product = self.env['product.product'].create({
+        self.product = self._create_mock_product({
             'name': '[MOCK] Mock Product',
-            'type': 'product',
             'default_code': 'TEST'
         })
 

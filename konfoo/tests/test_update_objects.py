@@ -1,4 +1,5 @@
 from odoo.tests import TransactionCase, tagged
+from odoo.release import version_info
 import json
 
 import logging
@@ -8,19 +9,24 @@ logger = logging.getLogger(__name__)
 @tagged('-at_install', 'post_install')
 class TestKonfooUpdateObjects(TransactionCase):
 
+    def _create_mock_product(self, values):
+        if version_info[:2] < (18, 0):
+            values['type'] = 'product'
+        else:
+            values['is_storable'] = True
+        return self.env['product.product'].create(values)
+
     def test_update_created_object(self):
         konfoo = self.env['konfoo.api']
         self.assertIsNotNone(konfoo)
 
-        template_main = self.env['product.product'].create({
+        template_main = self._create_mock_product({
             'name': '[MOCK] Konfoo Template',
-            'type': 'product',
             'default_code': 'KONFOO-TEMPLATE'
         })
 
-        self.env['product.product'].create({
+        self._create_mock_product({
             'name': '[MOCK] BoM Product',
-            'type': 'product',
             'default_code': 'BOM-PRODUCT'
         })
 
@@ -76,9 +82,8 @@ class TestKonfooUpdateObjects(TransactionCase):
         konfoo = self.env['konfoo.api']
         self.assertIsNotNone(konfoo)
 
-        product = self.env['product.product'].create({
+        product = self._create_mock_product({
             'name': '[MOCK] Product Copy',
-            'type': 'product',
             'default_code': 'PRODUCT-COPY'
         })
 
