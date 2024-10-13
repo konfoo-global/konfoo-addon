@@ -1,4 +1,5 @@
 from odoo.tests import TransactionCase, tagged
+from odoo.release import version_info
 
 import logging
 logger = logging.getLogger(__name__)
@@ -46,11 +47,18 @@ class TestKonfooRefParse(TransactionCase):
         konfoo = self.env['konfoo.api']
         self.assertIsNotNone(konfoo)
 
-        product = self.env['product.product'].create({
-            'name': '[MOCK] Mock Product',
-            'type': 'product',
-            'default_code': 'PROD1234'
-        })
+        if version_info[:2] < (18, 0):
+            product = self.env['product.product'].create({
+                'name': '[MOCK] Mock Product',
+                'type': 'product',
+                'default_code': 'PROD1234'
+            })
+        else:
+            product = self.env['product.product'].create([{
+                'name': '[MOCK] Mock Product',
+                'is_storable': True,
+                'default_code': 'PROD1234'
+            }])
 
         lookup = konfoo.parse_ref_assignment('product_id := id', 'mock_rule_id', 'MOCKINSTANCEID', dict())
         self.assertIsNone(lookup)

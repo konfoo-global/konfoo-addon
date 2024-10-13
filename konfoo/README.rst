@@ -25,6 +25,8 @@ Configuration
 Changelog
 =========
 
+- 1.7.0
+    - Port to 18.0
 - 1.6.0
     - Add ability to update objects and make RPC calls via Konfoo aggregator rules
 - 1.5.2

@@ -1,7 +1,7 @@
 # noinspection PyStatementEffect
 {
     'name': 'Konfoo',
-    'version': '1.6.0',
+    'version': '1.7.0',
     'author': 'Konfoo',
     'website': 'https://konfoo.com',
     'license': 'Other proprietary',
@@ -49,12 +49,12 @@
                 'security/security.xml',
                 'security/ir.model.access.csv',
 
-                'views/konfoo_dataset.xml',
-                'views/konfoo_cache.xml',
-                'views/konfoo_session.xml',
-                'views/konfoo_allowed_model.xml',
+                'views/konfoo_dataset_17.xml',
+                'views/konfoo_cache_17.xml',
+                'views/konfoo_session_17.xml',
+                'views/konfoo_allowed_model_17.xml',
                 'views/konfoo_menus.xml',
-                'views/sale_views.xml',
+                'views/sale_views_17.xml',
 
                 'views/res_config_settings_views.xml',
             ],
