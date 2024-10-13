@@ -14,7 +14,13 @@
                     <widget name="konfoo" />
                 </xpath>
 
-                <xpath expr="//notebook/page[@name='order_lines']/field[@name='order_line']/list" position="inside">
+                <!-- <xpath
+                    expr="//notebook/page[@name='order_lines']/field[@name='order_line']/tree/control"
+                    position="inside">
+                    <create name="add_konfoo_product_control" string="Add a configurable product" />
+                </xpath> -->
+
+                <xpath expr="//notebook/page[@name='order_lines']/field[@name='order_line']/tree" position="inside">
                     <field name="order_id" invisible="1" />
                     <field name="konfoo_session_id" invisible="1" column_invisible="1" />
                     <field name="konfoo_session_key" invisible="1" column_invisible="1" />

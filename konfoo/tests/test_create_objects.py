@@ -1,4 +1,5 @@
 from odoo.tests import TransactionCase, tagged
+from odoo.release import version_info
 import json
 
 import logging
@@ -8,13 +9,19 @@ logger = logging.getLogger(__name__)
 @tagged('-at_install', 'post_install')
 class TestKonfooCreateObjects(TransactionCase):
 
+    def _create_mock_product(self, values):
+        if version_info[:2] < (18, 0):
+            values['type'] = 'product'
+        else:
+            values['is_storable'] = True
+        return self.env['product.product'].create(values)
+
     def test_create_product(self):
         konfoo = self.env['konfoo.api']
         self.assertIsNotNone(konfoo)
 
-        template_product = self.env['product.product'].create({
+        template_product = self._create_mock_product({
             'name': '[MOCK] Product Template',
-            'type': 'product',
             'default_code': 'TEMPLATE-ID'
         })
 
@@ -41,15 +48,13 @@ class TestKonfooCreateObjects(TransactionCase):
         konfoo = self.env['konfoo.api']
         self.assertIsNotNone(konfoo)
 
-        template_main = self.env['product.product'].create({
+        template_main = self._create_mock_product({
             'name': '[MOCK] Product Template',
-            'type': 'product',
             'default_code': 'KONFOO-TEMPLATE'
         })
 
-        product = self.env['product.product'].create({
+        product = self._create_mock_product({
             'name': '[MOCK] Mock Product',
-            'type': 'product',
             'default_code': 'PROD1234'
         })
 
@@ -83,9 +88,8 @@ class TestKonfooCreateObjects(TransactionCase):
         konfoo = self.env['konfoo.api']
         self.assertIsNotNone(konfoo)
 
-        template_main = self.env['product.product'].create({
+        template_main = self._create_mock_product({
             'name': '[MOCK] Product Template',
-            'type': 'product',
             'default_code': 'KONFOO-TEMPLATE'
         })
 
@@ -127,15 +131,13 @@ class TestKonfooCreateObjects(TransactionCase):
         konfoo = self.env['konfoo.api']
         self.assertIsNotNone(konfoo)
 
-        template_main = self.env['product.product'].create({
+        template_main = self._create_mock_product({
             'name': '[MOCK] Product Template',
-            'type': 'product',
             'default_code': 'PROD1234'
         })
 
-        self.env['product.product'].create({
+        self._create_mock_product({
             'name': '[MOCK] Purchase Product Template',
-            'type': 'product',
             'default_code': 'TEMPLATE-ID'
         })
 
