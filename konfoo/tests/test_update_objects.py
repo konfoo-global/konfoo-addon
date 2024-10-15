@@ -68,7 +68,7 @@ class TestKonfooUpdateObjects(TransactionCase):
         """)
 
         bom, processed_objects = konfoo.process_aggregated_data(template_main.product_tmpl_id.id, dict(data=data), parent=None)
-        self.assertEqual(len(processed_objects), 2)
+        self.assertEqual(len(processed_objects), 4)
 
         created_product = processed_objects[0]
         self.assertEqual(created_product.name, "[MOCK] BoM Product Copy")
@@ -77,6 +77,31 @@ class TestKonfooUpdateObjects(TransactionCase):
         created_bom_line = processed_objects[1]
         self.assertEqual(created_bom_line.product_id.id, created_product.id)
         self.assertEqual(created_bom_line.product_qty, 2)
+
+    def test_read_object(self):
+        konfoo = self.env['konfoo.api']
+        self.assertIsNotNone(konfoo)
+
+        product = self.env['product.product'].create({
+            'name': '[MOCK] Read Product',
+            'type': 'product',
+            'default_code': 'READ-PRODUCT'
+        })
+
+        agg_line = json.loads("""
+            {
+                "__id__": "product_read",
+                "__instance__": "01J7ZJX51S506Y8P514P1Y2CNJ",
+                "command": "read",
+                "model": "product.product",
+                "records": "(search) [('default_code', '=', 'READ-PRODUCT')]"
+            }
+        """)
+
+        processed_object = konfoo.process_aggregated_data_line(agg_line, None, map_cache_objects=dict())
+        self.assertEqual(processed_object.default_code, product.default_code)
+        self.assertEqual(processed_object.name, product.name)
+        self.assertEqual(processed_object.type, product.type)
 
     def test_parse_records_lookup(self):
         konfoo = self.env['konfoo.api']
