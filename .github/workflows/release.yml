@@ -2,7 +2,7 @@
 name: Auto-Release
 
 env:
-  REF_STABLE: "17.0"
+  REF_STABLE: "18.0"
 
 on:
   workflow_dispatch:
@@ -28,6 +28,32 @@ jobs:
       - uses: actions/checkout@v4
         with:
           ref: ${{ env.REF_STABLE }}
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Configure git
+        run: |
+          git config --global user.name 'Automation'
+          git config --global user.email 'info@konfoo.com'
+          git config --global --add safe.directory $(pwd)
+      - name: Build release
+        run: /opt/release.sh
+      - name: Push changes
+        run: git push
+
+  release-lts-17:
+    runs-on: ubuntu-latest
+    container:
+      image: "ghcr.io/konfoo-global/konfoo-omvbs:latest"
+      options: --user root
+      credentials:
+        username: ${{ github.repository_owner }}
+        password: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: "17.0"
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
