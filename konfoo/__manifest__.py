@@ -6,20 +6,20 @@
     'website': 'https://konfoo.com',
     'license': 'Other proprietary',
     'data': [
-        'data/cron.xml',
+                'data/cron_legacy.xml',
 
-        'security/security.xml',
-        'security/ir.model.access.csv',
+                'security/security.xml',
+                'security/ir.model.access.csv',
 
-        'views/konfoo_dataset.xml',
-        'views/konfoo_cache.xml',
-        'views/konfoo_session.xml',
-        'views/konfoo_allowed_model.xml',
-        'views/konfoo_menus.xml',
-        'views/sale_views.xml',
+                'views/konfoo_dataset_17.xml',
+                'views/konfoo_cache_17.xml',
+                'views/konfoo_session_17.xml',
+                'views/konfoo_allowed_model_17.xml',
+                'views/konfoo_menus.xml',
+                'views/sale_views_17.xml',
 
-        'views/res_config_settings_views.xml',
-    ],
+                'views/res_config_settings_views.xml',
+            ],
     'depends': [
         'sale_management',
         'sale_margin',
