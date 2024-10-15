@@ -25,6 +25,9 @@ Configuration
 Changelog
 =========
 
+- 1.7.2
+    - Add ability to read objects and reference them via Konfoo aggregator rules
+    - Remove match case statements for backwards compatibility
 - 1.7.1
     - Updates to Estonian translations
     - Fixes a potentially colliding setting title (Client ID)
