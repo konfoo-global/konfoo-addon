@@ -1,7 +1,6 @@
 from odoo import api, models, _
 from odoo.exceptions import UserError, ValidationError
 from odoo.tools.safe_eval import safe_eval
-from odoo.tools.misc import OrderedSet
 from os import environ
 from urllib.parse import urljoin
 from requests.exceptions import RequestException
@@ -330,8 +329,8 @@ class KonfooAPI(models.AbstractModel):
         })
 
         allowed_models = self.allowed_models()
-        map_created_objects = dict()
-        processed_objects = OrderedSet()
+        map_cache_objects = dict()
+        processed_objects = list()
 
         for line in agg_data['data']:
             if '__id__' not in line:
@@ -348,38 +347,41 @@ class KonfooAPI(models.AbstractModel):
                 continue
 
             if parent:
-                map_created_objects[make_cache_key('parent', line.get('__instance__', 'anon'))] = parent
+                map_cache_objects[make_cache_key('parent', line.get('__instance__', 'anon'))] = parent
 
             logger.info(
                 'Executing rule: %s (model=%s, instance=%s)',
                 line.get('__id__'), line_model, line.get('__instance__', 'anon'))
 
-            obj = self.process_aggregated_data_line(line, bom.id, map_created_objects=map_created_objects)
-            processed_objects.add(obj)
+            obj = self.process_aggregated_data_line(line, bom.id, map_cache_objects=map_cache_objects)
+            processed_objects.append(obj)
 
-        return bom, list(processed_objects)
+        return bom, processed_objects
 
     @api.model
-    def process_aggregated_data_line(self, line, bom_id, map_created_objects=None):
+    def process_aggregated_data_line(self, line, bom_id, map_cache_objects=None):
         additional_data = None
         if line['model'] in ('mrp.bom.line', 'mrp.routing.workcenter'):
             additional_data = dict(bom_id=bom_id)
 
-        model, values, object, method = self.process_agg_line_struct(line, additional_data, map_created_objects)
+        model, values, object, method = self.process_agg_line_struct(line, additional_data, map_cache_objects)
         # noinspection PyBroadException
         try:
-            match method:
-                case 'create':
-                    created_object = self.create_object(model, values, object)
-                    if map_created_objects is not None:
-                        map_created_objects[make_cache_key(line['__id__'], line.get('__instance__', 'anon'))] = created_object
-                    return created_object
-                case 'write':
-                    object.write(values)
-                    return object
-                case _:
-                    getattr(object, method)(**values)
-                    return object
+            res = None
+            if method == 'create':
+                res = self.create_object(model, values, object)
+            elif method == 'read':
+                res = object
+            elif method == 'write':
+                object.write(values)
+                res = object
+            else:
+                res = getattr(object, method)(**values)
+
+            if map_cache_objects is not None:
+                map_cache_objects[make_cache_key(line['__id__'], line.get('__instance__', 'anon'))] = res
+
+            return res
         except Exception as err:
             logger.error(
                 'Failed to execute rule: %s (model=%s, instance=%s)',
@@ -393,7 +395,7 @@ class KonfooAPI(models.AbstractModel):
             ))
 
     @api.model
-    def process_agg_line_struct(self, data, additional_data=None, map_created_objects=None):
+    def process_agg_line_struct(self, data, additional_data=None, map_cache_objects=None):
         reserved = ('__id__', '__instance__', 'model', 'command', 'method', 'records')
 
         line_instance_id = data.get('__instance__', 'anon')
@@ -403,7 +405,7 @@ class KonfooAPI(models.AbstractModel):
 
         line_command = data.get('command', 'create')
         line_method = data.get('method')
-        if line_command and line_command not in ['create', 'write', 'rpc']:
+        if line_command and line_command not in ['create', 'read', 'write', 'rpc']:
             raise ValidationError(_('Aggregator line references invalid command: "%s"', line_command))
         if line_command == 'rpc' and not (line_method and is_valid_method(self.env[line_model], line_method)):
             raise ValidationError(_('Aggregator line references invalid method: "%s"', line_method))
@@ -414,7 +416,7 @@ class KonfooAPI(models.AbstractModel):
 
         line_records = data.get('records')
         if line_records:
-            lookup = self.parse_records_search(line_model, line_records, line_instance_id, map_created_objects)
+            lookup = self.parse_records_search(line_model, line_records, line_instance_id, map_cache_objects)
             if lookup is not None:
                 model_objects = lookup.search()
             if not model_objects:
@@ -446,7 +448,7 @@ class KonfooAPI(models.AbstractModel):
                     create[lookup.target_field] = record.id if record else None
                 continue
 
-            lookup = self.parse_ref_assignment(key, value, line_instance_id, map_created_objects)
+            lookup = self.parse_ref_assignment(key, value, line_instance_id, map_cache_objects)
             if lookup is not None:
                 if lookup.target_field in reserved:
                     continue
@@ -510,8 +512,8 @@ class KonfooAPI(models.AbstractModel):
         return KonfooLookupDom(target_field, self.env[lookup_model], lookup_field)
 
     @api.model
-    def parse_ref_assignment(self, key, value, instance_id, map_created_objects):
-        if not self.is_assignment(key) or not map_created_objects:
+    def parse_ref_assignment(self, key, value, instance_id, map_cache_objects):
+        if not self.is_assignment(key) or not map_cache_objects:
             return None
 
         target_field, lookup_ref = key.split(':=', 1)
@@ -520,21 +522,21 @@ class KonfooAPI(models.AbstractModel):
 
         if lookup_ref == 'parent':
             lookup_ref = value
-            parent_obj = map_created_objects.get(make_cache_key('parent', instance_id))
+            parent_obj = map_cache_objects.get(make_cache_key('parent', instance_id))
             if parent_obj is not None:
                 return KonfooLookupReference(target_field, parent_obj, lookup_ref)
 
         if '.' in lookup_ref:
             return None
 
-        obj = map_created_objects.get(make_cache_key(value, instance_id))
+        obj = map_cache_objects.get(make_cache_key(value, instance_id))
         if obj is None:
             return None
 
         return KonfooLookupReference(target_field, obj, lookup_ref)
 
     @api.model
-    def parse_records_search(self, model, value, instance_id, map_created_objects):
+    def parse_records_search(self, model, value, instance_id, map_cache_objects):
         if isinstance(value, int):
             return KonfooLookupSearch(self.env[model], [('id', '=', value)])
 
@@ -544,7 +546,7 @@ class KonfooAPI(models.AbstractModel):
             return None
 
         (lookup_prefix, lookup_domain, lookup_kwargs) = parsed.groups()
-        domain = safe_eval_objects(lookup_domain, map_created_objects, instance_id)
+        domain = safe_eval_objects(lookup_domain, map_cache_objects, instance_id)
         kwargs = safe_eval(lookup_kwargs) if lookup_kwargs else dict()
 
         return KonfooLookupSearch(self.env[model], domain, kwargs)
