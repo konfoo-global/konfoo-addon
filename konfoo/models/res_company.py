@@ -10,8 +10,8 @@ class ResCompany(models.Model):
     konfoo_url = fields.Char(string='Konfoo URL')
     konfoo_url_staging = fields.Char(string='Staging Konfoo URL')
 
-    konfoo_client_id = fields.Char(string='Client ID')
-    konfoo_client_id_staging = fields.Char(string='Staging Client ID')
+    konfoo_client_id = fields.Char(string='Konfoo Client ID')
+    konfoo_client_id_staging = fields.Char(string='Konfoo Staging Client ID')
 
     konfoo_sync_host = fields.Char(string='Sync Host')
     konfoo_sync_host_staging = fields.Char(string='Staging Sync Host')

@@ -4,10 +4,10 @@
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: Odoo Server 16.1alpha1+e\n"
+"Project-Id-Version: Odoo Server 17.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2022-11-17 07:41+0000\n"
-"PO-Revision-Date: 2022-11-17 07:41+0000\n"
+"POT-Creation-Date: 2024-10-15 07:20+0000\n"
+"PO-Revision-Date: 2024-10-15 07:20+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -21,6 +21,26 @@ msgid "Active"
 msgstr "Aktiivne"
 
 #. module: konfoo
+#: model_terms:ir.ui.view,arch_db:konfoo.res_config_settings_view_form_inherit_konfoo
+msgid "Advanced"
+msgstr "Täpsemad seaded"
+
+#. module: konfoo
+#. odoo-python
+#: code:addons/konfoo/models/konfoo_api.py:0
+#, python-format
+msgid "Aggregator line references invalid command: \"%s\""
+msgstr "Agregaatori rida viitab tundmatule käsule: \"%s\""
+
+#. module: konfoo
+#. odoo-python
+#: code:addons/konfoo/models/konfoo_api.py:0
+#, python-format
+msgid "Aggregator line references invalid method: \"%s\""
+msgstr "Agregaatori rida viitab tundmatule meetodile: \"%s\""
+
+#. module: konfoo
+#. odoo-python
 #: code:addons/konfoo/models/konfoo_api.py:0
 #, python-format
 msgid "Aggregator line references invalid model: \"%s\""
@@ -44,17 +64,24 @@ msgid "Are you sure you want to re-initialize this dataset in Konfoo?"
 msgstr "Oled kindel, et soovid lähtestada Konfoo andmehulga?"
 
 #. module: konfoo
+#: model:ir.model.fields,field_description:konfoo.field_res_config_settings__konfoo_config_blob
+msgid "Auto Configuration"
+msgstr "Automaatseadistus"
+
+#. module: konfoo
 #: model:ir.model.fields,field_description:konfoo.field_konfoo_dataset_field__csv_name
 msgid "CSV Column"
 msgstr "CSV Veerg"
 
 #. module: konfoo
+#. odoo-python
 #: code:addons/konfoo/models/konfoo_dataset_field.py:0
 #, python-format
 msgid "CSV column name %s contains forbidden characters"
 msgstr "CSV veeru nimi %s sisaldab keelatud tähti"
 
 #. module: konfoo
+#. odoo-python
 #: code:addons/konfoo/models/konfoo_dataset_field.py:0
 #, python-format
 msgid "CSV column name cannot be empty"
@@ -79,10 +106,22 @@ msgid ""
 msgstr ""
 "<b>Nimi</b>, <b>Andmemudel</b> or <b>Väljad</b> väärtuse muutmine\n"
 "                            põhjustab andmehulga täielikult resünkroniseerimise vajaduse."
+
 #. module: konfoo
 #: model_terms:ir.ui.view,arch_db:konfoo.res_config_settings_view_form_inherit_konfoo
 msgid "Common settings"
 msgstr "Ühised seaded"
+
+#. module: konfoo
+#: model:ir.model,name:konfoo.model_res_company
+msgid "Companies"
+msgstr "Ettevõtted"
+
+#. module: konfoo
+#: model:ir.model.fields,field_description:konfoo.field_konfoo_allowed_model__company_id
+#: model:ir.model.fields,field_description:konfoo.field_konfoo_dataset__company_id
+msgid "Company"
+msgstr "Ettevõte"
 
 #. module: konfoo
 #: model:ir.model,name:konfoo.model_res_config_settings
@@ -95,84 +134,115 @@ msgid "Configure a product"
 msgstr "Konfigureeri toode"
 
 #. module: konfoo
+#: model_terms:ir.ui.view,arch_db:konfoo.res_config_settings_view_form_inherit_konfoo
+msgid "Connection - LIVE"
+msgstr "Ühendus - LIVE"
+
+#. module: konfoo
+#: model_terms:ir.ui.view,arch_db:konfoo.res_config_settings_view_form_inherit_konfoo
+msgid "Connection - STAGING"
+msgstr "Ühendus - STAGING"
+
+#. module: konfoo
+#. odoo-python
 #: code:addons/konfoo/models/konfoo_api.py:0
 #, python-format
 msgid "Could not duplicate session \"{}\" from Konfoo backend"
 msgstr "Ei õnnestunud duplikeerida sessiooni: {}"
 
 #. module: konfoo
+#. odoo-python
 #: code:addons/konfoo/models/res_config_settings.py:0
 #, python-format
 msgid "Could not establish connection to Konfoo Sync: %s"
 msgstr "Ei suutnud ühendust luua Konfoo Sync teenusega: %s"
 
 #. module: konfoo
+#. odoo-python
 #: code:addons/konfoo/models/res_config_settings.py:0
 #, python-format
 msgid "Could not establish connection to Konfoo: %s"
 msgstr "Ei suutnud ühendust luua Konfoo teenusega: %s"
 
 #. module: konfoo
+#. odoo-python
 #: code:addons/konfoo/models/konfoo_api.py:0
 #, python-format
 msgid "Could not fetch BOM for session \"{}\" from Konfoo backend"
 msgstr "Konfoo BOM allalaadimine ebaõnnestus: {}"
 
 #. module: konfoo
+#. odoo-python
 #: code:addons/konfoo/models/konfoo_api.py:0
 #, python-format
 msgid "Could not fetch session \"{}\" from Konfoo backend"
 msgstr "Konfoo sessiooni allalaadimine ebaõnnestus: {}"
 
 #. module: konfoo
+#. odoo-python
 #: code:addons/konfoo/models/konfoo_api.py:0
 #, python-format
 msgid "Could not find \"sale.order\" with id: {}"
 msgstr "Ei leidnud \"sale.order\" kirjet id: {}"
 
 #. module: konfoo
+#. odoo-python
 #: code:addons/konfoo/models/konfoo_api.py:0
 #, python-format
-msgid "Could not find default UOM: %s"
-msgstr "Ei suutnud tuvastada vaike UOM kirjet: %s"
+msgid "Could not find recordset of model \"%s\" by \"%s\""
+msgstr "Ei leidnud mudeli \"%s\" andmeid päringuga \"%s\""
 
 #. module: konfoo
+#. odoo-python
 #: code:addons/konfoo/models/konfoo_api.py:0
 #, python-format
 msgid "Could not find template object of model \"%s\" by \"%s\" = \"%s\""
 msgstr "Ei suutnud leida mall objekti mudeliga \"%s\" otsingureegliga \"%s\" = \"%s\""
 
 #. module: konfoo
+#. odoo-python
 #: code:addons/konfoo/models/konfoo_api.py:0
 #, python-format
 msgid "Could not find template product: \"{}\""
 msgstr "Ei leidnud mall-toodet: \"{}\""
 
 #. module: konfoo
+#. odoo-python
+#: code:addons/konfoo/models/konfoo_api.py:0
+#, python-format
+msgid "Could not reload remote datasets: %s"
+msgstr "Konfoo andmike taaslaadimine ebaõnnestus: %s"
+
+#. module: konfoo
+#. odoo-python
 #: code:addons/konfoo/models/konfoo_api.py:0
 #, python-format
 msgid "Could not reset dataset: %s"
 msgstr "Andmehulka ei õnnestunud lähtestada: %s"
 
 #. module: konfoo
+#. odoo-python
 #: code:addons/konfoo/models/konfoo_api.py:0
 #, python-format
 msgid "Could not reset dataset: %s - %s"
 msgstr "Andmehulka ei õnnestunud lähtestada: %s - %s"
 
 #. module: konfoo
+#. odoo-python
 #: code:addons/konfoo/models/konfoo_api.py:0
 #, python-format
 msgid "Could not set dataset indices: %s"
 msgstr "Andmehulga indekseid ei õnnestunud seada: %s"
 
 #. module: konfoo
+#. odoo-python
 #: code:addons/konfoo/models/konfoo_api.py:0
 #, python-format
 msgid "Could not set dataset indices: %s - %s"
 msgstr "Andmehulga indekseid ei õnnestunud seada: %s - %s"
 
 #. module: konfoo
+#. odoo-python
 #: code:addons/konfoo/models/konfoo_api.py:0
 #, python-format
 msgid "Could not update dataset: %s - %s"
@@ -220,21 +290,25 @@ msgid "Dataset fields must be unique"
 msgstr "Andmehulga väljad peavad olema unikaalsed"
 
 #. module: konfoo
+#. odoo-python
 #: code:addons/konfoo/models/konfoo_dataset.py:0
 #, python-format
 msgid ""
 "Dataset name can only contain ASCII characters in range A..Z and digits "
 "(0..9)"
 msgstr ""
-"Andmehulga nimi tohib sisaldada ainult ASCII tähti (a..z, A..Z) ja numbreid (0..9)"
+"Andmehulga nimi tohib sisaldada ainult ASCII tähti (a..z, A..Z) ja numbreid "
+"(0..9)"
 
 #. module: konfoo
+#. odoo-python
 #: code:addons/konfoo/models/konfoo_dataset.py:0
 #, python-format
 msgid "Dataset name cannot be empty"
 msgstr "Andmehulga nimi ei tohi olla tühi"
 
 #. module: konfoo
+#. odoo-python
 #: code:addons/konfoo/models/konfoo_dataset.py:0
 #, python-format
 msgid "Dataset name cannot start with a digit"
@@ -253,9 +327,15 @@ msgid "Datasets"
 msgstr "Andmehulgad"
 
 #. module: konfoo
+#: model:ir.model.fields,field_description:konfoo.field_res_company__konfoo_default_uom_id
+#: model:ir.model.fields,field_description:konfoo.field_res_config_settings__konfoo_default_uom_id
+msgid "Default UOM"
+msgstr "Vaikimisi mõõtühik"
+
+#. module: konfoo
 #: model_terms:ir.ui.view,arch_db:konfoo.res_config_settings_view_form_inherit_konfoo
-msgid "Default UOM name"
-msgstr "Vaikimisi kasutatava mõõtühiku nimi"
+msgid "Default unit of measure used in BOM. If not specified `Units` is used."
+msgstr "Vaikimisi mõõtühik, mida kasutatakse BOM ridade loomisel. Kui pole seadistatud, siis kasutatakse `Units`."
 
 #. module: konfoo
 #: model:ir.model.fields,field_description:konfoo.field_konfoo_allowed_model__display_name
@@ -277,20 +357,42 @@ msgid "Duplicate"
 msgstr "Kopeeri"
 
 #. module: konfoo
+#. odoo-python
 #: code:addons/konfoo/models/konfoo_api.py:0
 #, python-format
 msgid "Duplicated session has no ID"
 msgstr "Duplikeeritud sessioonil puudub ID"
 
 #. module: konfoo
-#: model_terms:ir.ui.view,arch_db:konfoo.konfoo_view_order_form_inherit
-msgid "Edit"
-msgstr "Muuda"
+#. odoo-javascript
+#: code:addons/konfoo/static/src/15/js/dynamic_selection_widget.js:0
+#: code:addons/konfoo/static/src/js/dynamic_selection_widget.js:0
+#, python-format
+msgid "Dynamic Selection"
+msgstr ""
+
+#. module: konfoo
+#. odoo-python
+#: code:addons/konfoo/models/res_config_settings.py:0
+#, python-format
+msgid "Failed to establish connection to Konfoo Sync: %s"
+msgstr "Konfoo Sync ühendust ei õnnestunud luua: %s"
+
+#. module: konfoo
+#. odoo-python
+#: code:addons/konfoo/models/res_config_settings.py:0
+#, python-format
+msgid "Failed to establish connection to Konfoo: %s"
+msgstr "Konfoo ühendust ei õnnestunud luua: %s"
 
 #. module: konfoo
 #: model_terms:ir.ui.view,arch_db:konfoo.res_config_settings_view_form_inherit_konfoo
-msgid "Field for matching products to items coming from the configurator"
-msgstr "Toote väli, mille järgi vaikimisi tooteid otsitakse"
+msgid ""
+"Field for matching products to items coming from the configurator. If not "
+"specified `default_code` is used."
+msgstr ""
+"Väli, mille järgi üritatakse leida konfiguraatorist tulevaid tooteid."
+"Kui pole seadistatud, siis kasutatakse `default_code` välja."
 
 #. module: konfoo
 #: model:ir.model.fields,field_description:konfoo.field_konfoo_dataset__fields
@@ -313,16 +415,25 @@ msgid "ID"
 msgstr ""
 
 #. module: konfoo
+#. odoo-python
+#: code:addons/konfoo/models/konfoo_api.py:0
+#, python-format
+msgid ""
+"Invalid input from rule \"%s\":\n"
+"%s"
+msgstr ""
+"Vigane sisend reeglist \"%s\":\n"
+"%s"
+
+#. module: konfoo
 #: model:ir.module.category,name:konfoo.module_category_konfoo
 #: model:ir.ui.menu,name:konfoo.konfoo_menu_root
-#: model_terms:ir.ui.view,arch_db:konfoo.konfoo_view_order_form_inherit
 #: model_terms:ir.ui.view,arch_db:konfoo.res_config_settings_view_form_inherit_konfoo
 msgid "Konfoo"
 msgstr ""
 
 #. module: konfoo
 #: model:ir.actions.server,name:konfoo.ir_cron_konfoo_sync_ir_actions_server
-#: model:ir.cron,name:konfoo.ir_cron_konfoo_sync
 msgid "Konfoo - Sync datasets"
 msgstr "Konfoo - Sünkroniseeri andmehulgad"
 
@@ -342,47 +453,31 @@ msgid "Konfoo BOM (JSON)"
 msgstr ""
 
 #. module: konfoo
+#. odoo-python
 #: code:addons/konfoo/models/konfoo_api.py:0
 #, python-format
 msgid "Konfoo BOM data structure contains no `template_product`"
 msgstr "Konfoo BOM andmestruktuur ei sisalda `template_product` välja"
 
 #. module: konfoo
+#. odoo-python
 #: code:addons/konfoo/models/konfoo_api.py:0
 #, python-format
 msgid "Konfoo BOM data structure contains no metadata block"
 msgstr "Konfoo BOM andmestruktuur ei sisalda metadata blokki"
 
 #. module: konfoo
+#: model:ir.model.fields,field_description:konfoo.field_res_company__konfoo_client_id
 #: model:ir.model.fields,field_description:konfoo.field_res_config_settings__konfoo_client_id
-msgid "Konfoo Client"
-msgstr ""
-
-#. module: konfoo
-#: model_terms:ir.ui.view,arch_db:konfoo.res_config_settings_view_form_inherit_konfoo
 msgid "Konfoo Client ID"
 msgstr ""
 
 #. module: konfoo
+#. odoo-python
 #: code:addons/konfoo/models/res_config_settings.py:0
 #, python-format
 msgid "Konfoo Client ID not configured"
 msgstr "Konfoo Client ID pole konfigureeritud"
-
-#. module: konfoo
-#: model:ir.model.fields,field_description:konfoo.field_res_config_settings__konfoo_client_id_staging
-msgid "Konfoo Client Id Staging"
-msgstr ""
-
-#. module: konfoo
-#: model_terms:ir.ui.view,arch_db:konfoo.res_config_settings_view_form_inherit_konfoo
-msgid "Konfoo Connection - LIVE"
-msgstr "Konfoo ühendus - LIVE"
-
-#. module: konfoo
-#: model_terms:ir.ui.view,arch_db:konfoo.res_config_settings_view_form_inherit_konfoo
-msgid "Konfoo Connection - STAGING"
-msgstr "Konfoo ühendus - STAGING"
 
 #. module: konfoo
 #: model:ir.model,name:konfoo.model_konfoo_sync
@@ -395,19 +490,9 @@ msgid "Konfoo Dataset"
 msgstr "Konfoo Andmehulk"
 
 #. module: konfoo
-#: model:ir.model.fields,field_description:konfoo.field_res_config_settings__konfoo_default_uom_name
-msgid "Konfoo Default Uom Name"
-msgstr "Konfoo vaikimisi kasutatava mõõtühiku nimi"
-
-#. module: konfoo
 #: model:ir.model.fields,field_description:konfoo.field_konfoo_session__konfoo_object
 msgid "Konfoo Object (JSON)"
 msgstr ""
-
-#. module: konfoo
-#: model:ir.model.fields,field_description:konfoo.field_res_config_settings__konfoo_product_lookup_field
-msgid "Konfoo Product Lookup Field"
-msgstr "Konfoo tooteotsingu väli"
 
 #. module: konfoo
 #: model:ir.model,name:konfoo.model_konfoo_session
@@ -419,72 +504,54 @@ msgstr "Konfoo sessioon"
 #: model:ir.model.fields,field_description:konfoo.field_konfoo_session__konfoo_session_id
 #: model:ir.model.fields,field_description:konfoo.field_product_product__konfoo_session_id
 #: model:ir.model.fields,field_description:konfoo.field_product_template__konfoo_session_id
+#: model:ir.model.fields,field_description:konfoo.field_sale_order_line__konfoo_session_key
 msgid "Konfoo Session ID"
 msgstr "Konfoo sessiooni ID"
 
 #. module: konfoo
-#: model:ir.model.fields,field_description:konfoo.field_res_config_settings__konfoo_sync_batch_size
-msgid "Konfoo Sync Batch Size"
-msgstr "Konfoo sünkroniseerimise komplekti suurus"
+#: model:ir.actions.act_window,name:konfoo.act_settings
+msgid "Konfoo Settings"
+msgstr "Konfoo seaded"
 
 #. module: konfoo
-#: model:ir.model.fields,field_description:konfoo.field_res_config_settings__konfoo_sync_host
-msgid "Konfoo Sync Host"
+#: model:ir.model.fields,field_description:konfoo.field_res_company__konfoo_client_id_staging
+#: model:ir.model.fields,field_description:konfoo.field_res_config_settings__konfoo_client_id_staging
+msgid "Konfoo Staging Client ID"
 msgstr ""
 
 #. module: konfoo
-#: model:ir.model.fields,field_description:konfoo.field_res_config_settings__konfoo_sync_host_staging
-msgid "Konfoo Sync Host Staging"
-msgstr ""
-
-#. module: konfoo
-#: model:ir.model.fields,field_description:konfoo.field_res_config_settings__konfoo_sync_key
-#: model_terms:ir.ui.view,arch_db:konfoo.res_config_settings_view_form_inherit_konfoo
-msgid "Konfoo Sync Key"
-msgstr ""
-
-#. module: konfoo
-#: model:ir.model.fields,field_description:konfoo.field_res_config_settings__konfoo_sync_key_staging
-msgid "Konfoo Sync Key Staging"
-msgstr ""
-
-#. module: konfoo
+#. odoo-python
 #: code:addons/konfoo/models/res_config_settings.py:0
 #, python-format
 msgid "Konfoo Sync Key not configured"
 msgstr "Konfoo andmesünkroniseeringu võti pole konfigureeritud"
 
 #. module: konfoo
-#: model_terms:ir.ui.view,arch_db:konfoo.res_config_settings_view_form_inherit_konfoo
-msgid "Konfoo Sync URL"
-msgstr ""
-
-#. module: konfoo
+#. odoo-python
 #: code:addons/konfoo/models/res_config_settings.py:0
 #, python-format
 msgid "Konfoo Sync URL not configured"
 msgstr "Konfoo andmesünkroniseeringu URL pole konfigureeritud"
 
 #. module: konfoo
-#: model_terms:ir.ui.view,arch_db:konfoo.res_config_settings_view_form_inherit_konfoo
+#: model:ir.model.fields,field_description:konfoo.field_res_company__konfoo_url
+#: model:ir.model.fields,field_description:konfoo.field_res_config_settings__konfoo_url
 msgid "Konfoo URL"
 msgstr ""
 
 #. module: konfoo
+#. odoo-python
+#: code:addons/konfoo/models/konfoo_api.py:0
+#, python-format
+msgid "Konfoo URL is not configured"
+msgstr "Konfoo URL pole seadistatud"
+
+#. module: konfoo
+#. odoo-python
 #: code:addons/konfoo/models/res_config_settings.py:0
 #, python-format
 msgid "Konfoo URL not configured"
 msgstr "Konfoo URL pole konfigureeritud"
-
-#. module: konfoo
-#: model:ir.model.fields,field_description:konfoo.field_res_config_settings__konfoo_url
-msgid "Konfoo Url"
-msgstr ""
-
-#. module: konfoo
-#: model:ir.model.fields,field_description:konfoo.field_res_config_settings__konfoo_url_staging
-msgid "Konfoo Url Staging"
-msgstr ""
 
 #. module: konfoo
 #: model:res.groups,name:konfoo.group_konfoo_user
@@ -497,41 +564,30 @@ msgid "Konfoo allowed models"
 msgstr "Lubatud andmemudelid"
 
 #. module: konfoo
+#. odoo-python
 #: code:addons/konfoo/models/res_config_settings.py:0
 #, python-format
 msgid "Konfoo connections OK (%s)"
 msgstr "Konfoo ühendused korras (%s)"
 
 #. module: konfoo
-#: code:addons/konfoo/models/konfoo_api.py:0
-#, python-format
-msgid ""
-"Konfoo encountered invalid input from rule %s\n"
-"%s"
-msgstr ""
-"Konfoo kohtas ebakorrektset sisendit agregaatori reeglist %s\n"
-"%s"
+#: model:ir.actions.act_window,name:konfoo.action_konfoo_configuration
+msgid "Konfoo settings"
+msgstr "Konfoo seaded"
 
 #. module: konfoo
+#. odoo-python
 #: code:addons/konfoo/models/konfoo_api.py:0
 #, python-format
 msgid "Konfoo sync host is not configured"
 msgstr "Konfoo andmesünkroniseeringu aadress pole konfigureeritud"
 
 #. module: konfoo
+#. odoo-python
 #: code:addons/konfoo/models/konfoo_api.py:0
 #, python-format
 msgid "Konfoo sync key is not configured"
 msgstr "Konfoo andmesünkroniseeringu võti pole konfigureeritud"
-
-#. module: konfoo
-#: model:ir.model.fields,field_description:konfoo.field_konfoo_allowed_model____last_update
-#: model:ir.model.fields,field_description:konfoo.field_konfoo_dataset____last_update
-#: model:ir.model.fields,field_description:konfoo.field_konfoo_dataset_field____last_update
-#: model:ir.model.fields,field_description:konfoo.field_konfoo_dataset_object____last_update
-#: model:ir.model.fields,field_description:konfoo.field_konfoo_session____last_update
-msgid "Last Modified on"
-msgstr "Viimati muudetud"
 
 #. module: konfoo
 #: model:ir.model.fields,field_description:konfoo.field_konfoo_allowed_model__write_uid
@@ -589,15 +645,29 @@ msgid "No sessions"
 msgstr "Ühtegi sessiooni pole"
 
 #. module: konfoo
+#. odoo-python
 #: code:addons/konfoo/models/konfoo_api.py:0
 #, python-format
-msgid "Please configure konfoo.url in System Parameters"
-msgstr "Palun konfigureerige konfoo.url süsteemi parameeter"
+msgid "Please configure Konfoo URL in Konfoo settings"
+msgstr "Palun seadista Konfoo URL"
+
+#. module: konfoo
+#. odoo-python
+#: code:addons/konfoo/models/konfoo_api.py:0
+#, python-format
+msgid "Please configure Konfoo default unit of measure in Konfoo settings"
+msgstr "Palun seadista Konfoo vaikimisi mõõtühik"
 
 #. module: konfoo
 #: model:ir.model,name:konfoo.model_product_template
 msgid "Product"
 msgstr "Toode"
+
+#. module: konfoo
+#: model:ir.model.fields,field_description:konfoo.field_res_company__konfoo_product_lookup_field
+#: model:ir.model.fields,field_description:konfoo.field_res_config_settings__konfoo_product_lookup_field
+msgid "Product lookup field"
+msgstr "Konfoo tooteotsingu väli"
 
 #. module: konfoo
 #: model_terms:ir.ui.view,arch_db:konfoo.view_konfoo_dataset
@@ -627,9 +697,50 @@ msgid "Sessions"
 msgstr "Sessioonid"
 
 #. module: konfoo
+#: model:ir.ui.menu,name:konfoo.konfoo_config_menu
+msgid "Settings"
+msgstr "Seaded"
+
+#. module: konfoo
+#: model:ir.model.fields,field_description:konfoo.field_res_company__konfoo_url_staging
+#: model:ir.model.fields,field_description:konfoo.field_res_config_settings__konfoo_url_staging
+msgid "Staging Konfoo URL"
+msgstr ""
+
+#. module: konfoo
+#: model:ir.model.fields,field_description:konfoo.field_res_company__konfoo_sync_host_staging
+#: model:ir.model.fields,field_description:konfoo.field_res_config_settings__konfoo_sync_host_staging
+msgid "Staging Sync Host"
+msgstr ""
+
+#. module: konfoo
+#: model:ir.model.fields,field_description:konfoo.field_res_company__konfoo_sync_key_staging
+#: model:ir.model.fields,field_description:konfoo.field_res_config_settings__konfoo_sync_key_staging
+msgid "Staging Sync Key"
+msgstr ""
+
+#. module: konfoo
 #: model:ir.ui.menu,name:konfoo.konfoo_cache_menu
 msgid "Sync Cache"
 msgstr ""
+
+#. module: konfoo
+#: model:ir.model.fields,field_description:konfoo.field_res_company__konfoo_sync_host
+#: model:ir.model.fields,field_description:konfoo.field_res_config_settings__konfoo_sync_host
+msgid "Sync Host"
+msgstr ""
+
+#. module: konfoo
+#: model:ir.model.fields,field_description:konfoo.field_res_company__konfoo_sync_key
+#: model:ir.model.fields,field_description:konfoo.field_res_config_settings__konfoo_sync_key
+msgid "Sync Key"
+msgstr ""
+
+#. module: konfoo
+#: model:ir.model.fields,field_description:konfoo.field_res_company__konfoo_sync_batch_size
+#: model:ir.model.fields,field_description:konfoo.field_res_config_settings__konfoo_sync_batch_size
+msgid "Sync batch size"
+msgstr "Konfoo sünkroniseerimise komplekti suurus"
 
 #. module: konfoo
 #: model_terms:ir.ui.view,arch_db:konfoo.view_konfoo_dataset
@@ -652,6 +763,7 @@ msgid "Technical name"
 msgstr "Tehniline nimi"
 
 #. module: konfoo
+#. odoo-python
 #: code:addons/konfoo/models/konfoo_api.py:0
 #, python-format
 msgid "Template product should not have BOMs defined"
@@ -664,10 +776,21 @@ msgstr "Testi ühendust"
 
 #. module: konfoo
 #: model_terms:ir.ui.view,arch_db:konfoo.res_config_settings_view_form_inherit_konfoo
-msgid "The maximum number of records synced in one batch"
-msgstr "Maksimaalne kirjete arv, mida korraga sünkroniseeritakse"
+msgid ""
+"The maximum number of records synced in one batch. If not specified 100 is "
+"used."
+msgstr ""
+"Maksimaalne kirjete arv, mida ühe korraga sünkroniseeritakse."
 
 #. module: konfoo
+#. odoo-python
+#: code:addons/konfoo/models/konfoo_api.py:0
+#, python-format
+msgid "Unable to create Konfoo context"
+msgstr "Konfoo konteksti loomine ebaõnnestus"
+
+#. module: konfoo
+#. odoo-python
 #: code:addons/konfoo/models/res_config_settings.py:0
 #: code:addons/konfoo/models/res_config_settings.py:0
 #, python-format
@@ -684,3 +807,8 @@ msgstr "Unikaalne indeks"
 #: model:ir.model.fields,field_description:konfoo.field_product_template__seller_ids
 msgid "Vendors"
 msgstr "Tarnijad"
+
+#. module: konfoo
+#: model:ir.model.fields.selection,name:konfoo.selection__konfoo_dataset_field__name__selection_dynamic
+msgid "list_model_fields"
+msgstr ""

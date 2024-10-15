@@ -25,6 +25,9 @@ Configuration
 Changelog
 =========
 
+- 1.7.1
+    - Updates to Estonian translations
+    - Fixes a potentially colliding setting title (Client ID)
 - 1.7.0
     - Port to 18.0
 - 1.6.0
