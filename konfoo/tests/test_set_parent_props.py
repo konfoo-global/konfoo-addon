@@ -98,13 +98,13 @@ class TestKonfooSetParentProps(TransactionCase):
         self.assertIsNotNone(konfoo)
 
         line = TEST_BOM_DATA.get('data')[0]
-        map_created_objects = dict()
-        map_created_objects[make_cache_key('parent', line.get('__instance__', 'anon'))] = self.sale_order
+        map_cache_objects = dict()
+        map_cache_objects[make_cache_key('parent', line.get('__instance__', 'anon'))] = self.sale_order
 
-        created_obj = konfoo.process_aggregated_data_line(line, None, map_created_objects=map_created_objects)
+        created_obj = konfoo.process_aggregated_data_line(line, None, map_cache_objects=map_cache_objects)
         self.assertTrue(bool(created_obj))
         so_line_cache_key = make_cache_key('create_so_line', line.get('__instance__', 'anon'))
-        self.assertTrue(so_line_cache_key in map_created_objects)
-        self.assertEqual(map_created_objects.get(so_line_cache_key), created_obj)
+        self.assertTrue(so_line_cache_key in map_cache_objects)
+        self.assertEqual(map_cache_objects.get(so_line_cache_key), created_obj)
         self.assertEqual(created_obj.product_uom_qty, 2)
         self.assertEqual(created_obj.product_id.id, self.product.id)
