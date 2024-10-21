@@ -25,6 +25,8 @@ Configuration
 Changelog
 =========
 
+- 1.7.3
+    - Correct view overrides for 15/16 versions
 - 1.7.2
     - Add ability to read objects and reference them via Konfoo aggregator rules
     - Remove match case statements for backwards compatibility
