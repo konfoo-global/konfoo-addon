@@ -25,6 +25,8 @@ Configuration
 Changelog
 =========
 
+- 1.8.0
+    - Added `update_if_exists` option to `meta` block
 - 1.7.3
     - Correct view overrides for 15/16 versions
 - 1.7.2
