@@ -1,4 +1,4 @@
-from odoo.tests import TransactionCase, tagged
+from odoo.tests import TransactionCase, tagged, Form
 from odoo.release import version_info
 import json
 
@@ -171,3 +171,88 @@ class TestKonfooCreateObjects(TransactionCase):
         self.assertEqual(bom_line.product_id.name, "[MOCK] Purchase Product")
         self.assertEqual(bom_line.product_id.barcode, "1234567890")
         self.assertEqual(bom_line.product_qty, 2)
+
+    def test_yielding_identical_object(self):
+        konfoo = self.env['konfoo.api']
+        self.assertIsNotNone(konfoo)
+
+        company = self.env.user.company_id
+
+        # NOTE: the values do not matter 'cause we avoid doing any requests
+        company.konfoo_url = company.konfoo_url_staging = 'http://localhost:8000'
+        company.konfoo_client_id_staging = company.konfoo_client_id = 'test'
+        company.konfoo_default_uom_id = self.env.ref('uom.product_uom_unit').id
+        ctx = konfoo.configure()
+
+        template_product = self._create_mock_product({
+            'name': '[MOCK] Product Template',
+            'default_code': 'KONFOO-TEMPLATE-vqctTr00'
+        })
+
+        component = self._create_mock_product({
+            'name': '[MOCK] Component 1',
+            'default_code': 'COMPONENT-1'
+        })
+
+        partner_form = Form(self.env['res.partner'])
+        partner_form.name = 'Test Partner'
+        partner = partner_form.save()
+
+        sale_order_form = Form(self.env['sale.order'])
+        sale_order_form.partner_id = partner
+        sale_order = sale_order_form.save()
+
+        data = json.loads("""
+            {
+                "meta": {
+                    "default_code": "ACIED",
+                    "line.price_unit": 123.0,
+                    "name": "Initial Name",
+                    "template_product": "KONFOO-TEMPLATE-vqctTr00",
+                    "use_parent_name_prefix": false,
+                    "update_if_exists": "default_code"
+                },
+                "name": "Bill of materials",
+                "data": [
+                    {
+                        "__id__": "component_1",
+                        "__instance__": "01AAAAAAAAAAAAAAAAAAAAAAAA",
+                        "model": "mrp.bom.line",
+                        "product_id := product.product.default_code": "COMPONENT-1",
+                        "product_qty": 1,
+                        "product_uom_id := uom.uom.name": "Units"
+                    }
+                ]
+            }
+        """)
+
+        konfoo.process_konfoo_session(ctx, '01SSSSSSSSSSSSSSSSSSSSSSS0', dict(), data, sale_order)
+
+        self.assertEqual(len(sale_order.order_line), 1)
+
+        order_line_0 = sale_order.order_line[0]
+        self.assertAlmostEqual(order_line_0.price_unit, 123.0)
+        self.assertEqual(order_line_0.product_id.name, 'Initial Name')
+
+        session_0 = self.env['konfoo.session'].search([('konfoo_session_id', '=', '01SSSSSSSSSSSSSSSSSSSSSSS0')])
+        self.assertEqual(len(session_0), 1)
+        self.assertEqual(session_0.konfoo_session_id, '01SSSSSSSSSSSSSSSSSSSSSSS0')
+        self.assertEqual(order_line_0.product_id.konfoo_session_id.id, session_0.id)
+
+        data['meta']['name'] = 'Updated Name'
+        konfoo.process_konfoo_session(ctx, '01SSSSSSSSSSSSSSSSSSSSSSS1', dict(), data, sale_order)
+
+        self.assertEqual(len(sale_order.order_line), 2)
+        self.assertEqual(sale_order.order_line[0].id, order_line_0.id)
+
+        order_line_1 = sale_order.order_line[1]
+        self.assertAlmostEqual(order_line_1.price_unit, 123.0)
+        self.assertEqual(order_line_1.product_id.name, 'Updated Name')
+        self.assertEqual(order_line_0.product_id.name, 'Updated Name')
+        self.assertEqual(order_line_0.product_id.id, order_line_1.product_id.id)
+
+        session_1 = self.env['konfoo.session'].search([('konfoo_session_id', '=', '01SSSSSSSSSSSSSSSSSSSSSSS1')])
+        self.assertEqual(len(session_1), 1)
+        self.assertEqual(session_1.konfoo_session_id, '01SSSSSSSSSSSSSSSSSSSSSSS1')
+        self.assertEqual(order_line_1.product_id.konfoo_session_id.id, session_1.id)
+        self.assertEqual(order_line_0.product_id.konfoo_session_id.id, session_1.id)
