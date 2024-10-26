@@ -87,7 +87,7 @@ class TestKonfooSetParentProps(TransactionCase):
         self.assertIsNotNone(konfoo)
         self.assertEqual(self.sale_order.commitment_date, False)
 
-        template_product, product_name, additional_data = konfoo.process_bom_metadata(TEST_BOM_DATA, self.sale_order)
+        template_product, product_name, additional_data, options = konfoo.process_bom_metadata(TEST_BOM_DATA, self.sale_order)
         self.assertEqual(template_product, 'KONFOO-TEMPLATE')
         self.assertEqual(product_name, f'{self.sale_order.name} SO-PRODUCT-NAME')
         self.assertEqual(len(additional_data.keys()), 0)

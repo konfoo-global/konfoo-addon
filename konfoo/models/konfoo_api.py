@@ -24,6 +24,7 @@ METADATA_KEYWORDS = (
     'template_product',
     'use_parent_name_prefix',
     'product_name_delimiter',
+    'update_if_exists',
 )
 
 
@@ -224,6 +225,15 @@ class KonfooAPI(models.AbstractModel):
         use_parent_name_prefix = bool(meta.get('use_parent_name_prefix', True))
         product_name_delimiter = str(meta.get('product_name_delimiter', ' '))
 
+        update_if_exists = meta.get('update_if_exists', False)
+        if update_if_exists and not isinstance(update_if_exists, str):
+            logger.warning('Metadata field "update_if_exists" - value should be a field name, found "%s"', update_if_exists)
+            update_if_exists = False
+
+        if update_if_exists and update_if_exists not in self.env['product.product']._fields:
+            logger.warning('Metadata field "update_if_exists" - field "%s" does not exist', update_if_exists)
+            update_if_exists = False
+
         additional_data = meta.copy()
         for keyword in METADATA_KEYWORDS:
             if keyword in additional_data:
@@ -257,7 +267,7 @@ class KonfooAPI(models.AbstractModel):
                     if field_name not in parent._fields:
                         logger.warning('Ignoring metadata field "%s" - field does not exist in %s', field, parent)
                         continue
-                    parent.update({field_name: value})
+                    parent.write({field_name: value})
                 elif object_name == 'line':
                     if field_name not in line_model._fields:
                         logger.warning('Ignoring metadata field "%s" - field does not exist in %s', field, line_model)
@@ -279,7 +289,19 @@ class KonfooAPI(models.AbstractModel):
                 logger.warning('Ignoring metadata field "%s" - field does not exist in product.product', field)
                 continue
 
-        return template_product, product_name, additional_data
+        if update_if_exists and update_if_exists not in additional_data:
+            logger.warning('Metadata field "update_if_exists" - field "%s" does not have value in metadata', update_if_exists)
+            update_if_exists = False
+
+        options = dict(
+            use_parent_name_prefix=use_parent_name_prefix,
+            product_name_delimiter=product_name_delimiter,
+            product_name=product_name,
+            additional_data=additional_data,
+            update_if_exists=update_if_exists,
+        )
+
+        return template_product, product_name, additional_data, options
 
     @api.model
     def process_konfoo_session(self, ctx, session_key, session_data, bom_data, parent):
@@ -288,7 +310,7 @@ class KonfooAPI(models.AbstractModel):
 
         line_vals = {}
 
-        template_product, product_name, additional_data = self.process_bom_metadata(
+        template_product, product_name, additional_data, options = self.process_bom_metadata(
             bom_data, parent,
             line=line_vals,
             line_model=self.env['sale.order.line']
@@ -301,7 +323,7 @@ class KonfooAPI(models.AbstractModel):
         logger.info('Metadata processed - template=%s', template_product)
 
         (product, created) = self._konfoo_product(
-            ctx, session_object.id, template_product, product_name, additional_data=additional_data)
+            ctx, session_object.id, template_product, product_name, additional_data=additional_data, options=options)
 
         logger.info('Using product: %s (%s)', product.name, product.id)
         bom, created_objects = self.process_aggregated_data(product.product_tmpl_id.id, bom_data, parent=parent)
@@ -316,11 +338,12 @@ class KonfooAPI(models.AbstractModel):
             line_vals['product_id'] = product.id
             line_vals['order_id'] = parent.id
             logger.info('Creating sale.order.line: %s', line_vals)
-            self.env['sale.order.line'].create(line_vals)
+            sale_order_line = self.env['sale.order.line'].create(line_vals)
+            logger.info('Created sale.order.line: %s', sale_order_line)
         else:
             lines = parent.order_line.search([('konfoo_session_id', '=', session_object.id)])
             logger.info('Updating sale.order.line %s: %s', lines, line_vals)
-            lines.update(line_vals)
+            lines.write(line_vals)
 
     @api.model
     def process_aggregated_data(self, product_tmpl_id, agg_data, parent=None):
@@ -607,20 +630,32 @@ class KonfooAPI(models.AbstractModel):
             raise UserError(_('Could not reload remote datasets: %s', str(err)))
 
     @api.model
-    def _konfoo_product(self, ctx, session_object_id, template_product_value, product_name, additional_data=None):
+    def _konfoo_product(self, ctx, session_object_id, template_product_value, product_name, additional_data=None, options=None):
         product = self.env['product.product'].search([('konfoo_session_id', '=', session_object_id)], limit=1)
+        create_line = False
+
+        if not product and options and options.get('update_if_exists'):
+            product = self.env['product.product'].search([
+                (options.get('update_if_exists'), '=', additional_data.get(options.get('update_if_exists')))
+            ], limit=1)
+            if product:
+                create_line = True
+                # the old session gets discarded in this case
+                product.write(dict(konfoo_session_id=session_object_id))
+
         if product:
             logger.info('Reconfiguring product: %s (%s)', product.name, product.id)
             vals = dict(name=product_name)
             if additional_data is not None:
                 vals.update(additional_data)
-            product.update(vals)
+            product.write(vals)
+
             if product.bom_count > 0:
                 logger.info('Removing existing BOMs from the product %s', product)
                 boms = self.env['mrp.bom'].search([('product_tmpl_id', '=', product.product_tmpl_id.id)])
                 logger.info('Found BOMs: %s', boms)
                 boms.unlink()
-            return product, False
+            return product, create_line
 
         template_product = self.find_product_by_field(ctx.product_lookup_field, template_product_value)
         if not template_product:
