@@ -2,11 +2,11 @@ from odoo import fields
 from odoo.release import version_info
 
 if version_info[:2] < (18, 0):
-    # noinspection PyPep8Naming
+    # noinspection PyPep8Naming,PyUnresolvedReferences
     from odoo.fields import Default as SENTINEL
 else:
-    # noinspection PyUnresolvedReferences
-    from odoo.fields import SENTINEL
+    # noinspection PyProtectedMember
+    from odoo.tools.misc import SENTINEL
 
 import logging
 logger = logging.getLogger(__name__)

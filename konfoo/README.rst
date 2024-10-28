@@ -25,6 +25,11 @@ Configuration
 Changelog
 =========
 
+- 1.8.1
+    - Fix regression in tests for 18 / edge
+    - Correct import path for `SENTINEL` in `DynamicSelection`
+    - Support Odoo `json` -> `jsonrpc` route type change
+    - Remove deprecated `inline` target from menu actions
 - 1.8.0
     - Added `update_if_exists` option to `meta` block
 - 1.7.3
