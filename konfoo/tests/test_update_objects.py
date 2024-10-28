@@ -82,9 +82,8 @@ class TestKonfooUpdateObjects(TransactionCase):
         konfoo = self.env['konfoo.api']
         self.assertIsNotNone(konfoo)
 
-        product = self.env['product.product'].create({
+        product = self._create_mock_product({
             'name': '[MOCK] Read Product',
-            'type': 'product',
             'default_code': 'READ-PRODUCT'
         })
 
