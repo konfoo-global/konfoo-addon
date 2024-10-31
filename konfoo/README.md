@@ -1,4 +1,3 @@
-======
 Konfoo
 ======
 
@@ -6,7 +5,7 @@ Konfoo integration
 
 
 Configuration
-=============
+-------------
 
 - Configuration parameters can be accessed from Settings -> Konfoo
 - The configuration parameters are different for STAGING and LIVE environments.
@@ -22,9 +21,39 @@ Configuration
     - Sync batch size - The maximum number of records synced in one batch. If not specified 100 is used.
 
 
-Changelog
-=========
+Extending for other models
+--------------------------
 
+Currently, this is limited to models that have the parent + lines structure,
+for instance `sale.order` and `sale.order.line`.
+
+In the form view of the parent model you can add the konfoo widget like this:
+
+```xml
+<widget name="konfoo" parent="my.model" line="my.model.line" />
+```
+
+Additionally, you must implement `konfoo_options` API on the line model like this (again `sale.order.line` as example):
+
+```python
+@api.model
+def konfoo_options(self):
+    return dict(
+        quantity='product_uom_qty',
+        uom='product_uom',
+        product_id='product_id',
+        parent_id='order_id',
+    )
+```
+
+If you do not need a parameter to be set then the value can be `None` or the key omitted from this dict.
+
+
+Changelog
+---------
+
+- 1.9.0
+    - Ability to use Konfoo in other models besides `sale.order`
 - 1.8.1
     - Fix regression in tests for 18 / edge
     - Correct import path for `SENTINEL` in `DynamicSelection`
