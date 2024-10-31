@@ -78,7 +78,7 @@ class TestKonfooMetadata(TransactionCase):
         self.assertEqual(len(order.order_line), 0)
 
         ctx = konfoo.configure()
-        konfoo.process_konfoo_session(ctx, '01XXXXXXXXXXXXXXXXXXXXXXXX', dict(), data, order)
+        konfoo.process_konfoo_session(ctx, '01XXXXXXXXXXXXXXXXXXXXXXXX', dict(), data, order, 'sale.order.line')
 
         self.assertEqual(order.origin, 'Made by Konfoo')
         self.assertEqual(len(order.order_line), 1)
@@ -88,7 +88,7 @@ class TestKonfooMetadata(TransactionCase):
 
         # test updating
         data['meta']['line.name'] = 'Updated Line Name'
-        konfoo.process_konfoo_session(ctx, '01XXXXXXXXXXXXXXXXXXXXXXXX', dict(), data, order)
+        konfoo.process_konfoo_session(ctx, '01XXXXXXXXXXXXXXXXXXXXXXXX', dict(), data, order, 'sale.order.line')
 
         self.assertEqual(order.origin, 'Made by Konfoo')
         self.assertEqual(len(order.order_line), 1)

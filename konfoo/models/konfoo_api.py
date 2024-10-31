@@ -162,8 +162,37 @@ class KonfooAPI(models.AbstractModel):
         return allowed
 
     @api.model
-    def duplicate(self, sale_order_id, konfoo_session_key):
+    def get_parent_model(self):
+        konfoo_parent_model = self.env.context.get('konfoo_parent_model')
+        if konfoo_parent_model and konfoo_parent_model in self.env:
+            return konfoo_parent_model
+        return 'sale.order'
+
+    @api.model
+    def get_line_model(self):
+        konfoo_line_model = self.env.context.get('konfoo_line_model')
+        if konfoo_line_model and konfoo_line_model in self.env:
+            return konfoo_line_model
+        return 'sale.order.line'
+
+    @api.model
+    def get_line_lookup_domain(self, line_model, session_id):
+        # TODO: optionally we could introduce a parent relationship field (e.g. order_id = parent.id)
+        return [('konfoo_session_id', '=', session_id)]
+
+    @api.model
+    def get_default_line_options(self):
+        return dict(
+            quantity='product_uom_qty',
+            uom='product_uom',
+            product_id='product_id',
+            parent_id='order_id',
+        )
+
+    @api.model
+    def duplicate(self, res_id, konfoo_session_key, parent_model=None, line_model=None):
         ctx = self.configure()
+        parent_model, line_model = self._validate_konfoo_models(parent_model, line_model)
 
         response = requests.post(
             urljoin(ctx.konfoo_url, '/api/v1/state/{}/duplicate'.format(konfoo_session_key)),
@@ -175,23 +204,24 @@ class KonfooAPI(models.AbstractModel):
             raise UserError(_('Duplicated session has no ID'))
 
         logger.info('Duplicated session %s as: %s', konfoo_session_key, session_data['id'])
-        self.create_so_line_from_session(sale_order_id, session_data['id'])
+        self.create_from_session(res_id, session_data['id'], parent_model, line_model)
 
     @api.model
-    def create_so_line_from_session(self, sale_order_id, session_key):
+    def create_from_session(self, res_id, session_key, parent_model=None, line_model=None):
         ctx = self.configure()
+        parent_model, line_model = self._validate_konfoo_models(parent_model, line_model)
 
-        sale_order = self.env['sale.order'].browse([sale_order_id])
-        if not sale_order:
-            raise UserError(_('Could not find "sale.order" with id: {}'.format(sale_order_id)))
-        logger.info('Sale order: %s (%s)', sale_order.name, sale_order.id)
+        record = self.env[parent_model].browse([res_id])
+        if not record:
+            raise UserError(_('Could not find "%s" with id: %s', parent_model, res_id))
+        logger.info('Konfoo updating parent record: %s', record)
 
-        # TODO: find konfoo products on this order and calculate "index" for product name prefix S00001/1
+        # TODO: find konfoo products on this record and calculate "index" for product name prefix (e.g. S00001/1)
 
-        logger.info('Fetching configuration state')
+        logger.info('Fetching configuration state: %s', session_key)
         (session_data, bom_data) = fetch_konfoo_data(ctx.konfoo_url, session_key)
 
-        return self.process_konfoo_session(ctx, session_key, session_data, bom_data, sale_order)
+        return self.process_konfoo_session(ctx, session_key, session_data, bom_data, record, line_model)
 
     @api.model
     def process_bom_metadata(self, bom_data, parent, line=None, line_model=None):
@@ -304,7 +334,7 @@ class KonfooAPI(models.AbstractModel):
         return template_product, product_name, additional_data, options
 
     @api.model
-    def process_konfoo_session(self, ctx, session_key, session_data, bom_data, parent):
+    def process_konfoo_session(self, ctx, session_key, session_data, bom_data, parent, line_model):
         logger.info('Creating/updating Konfoo session data: %s', session_key)
         session_object = self._create_or_update_konfoo_session(session_key, session_data, bom_data)
 
@@ -313,7 +343,7 @@ class KonfooAPI(models.AbstractModel):
         template_product, product_name, additional_data, options = self.process_bom_metadata(
             bom_data, parent,
             line=line_vals,
-            line_model=self.env['sale.order.line']
+            line_model=self.env[line_model]
         )
 
         # Default to product name if not specified by user
@@ -333,17 +363,30 @@ class KonfooAPI(models.AbstractModel):
         product.button_bom_cost()
 
         if created:
-            line_vals['product_uom_qty'] = 1
-            line_vals['product_uom'] = ctx.default_uom.id
-            line_vals['product_id'] = product.id
-            line_vals['order_id'] = parent.id
-            logger.info('Creating sale.order.line: %s', line_vals)
-            sale_order_line = self.env['sale.order.line'].create(line_vals)
-            logger.info('Created sale.order.line: %s', sale_order_line)
+            line_model_options = self.get_default_line_options()
+            if getattr(self.env[line_model], 'konfoo_options', None):
+                line_model_options = self.env[line_model].konfoo_options()
+
+            if line_model_options.get('quantity'):
+                line_vals[line_model_options.get('quantity')] = 1
+            if line_model_options.get('uom'):
+                line_vals[line_model_options.get('uom')] = ctx.default_uom.id
+            if line_model_options.get('product_id'):
+                line_vals[line_model_options.get('product_id')] = product.id
+            if line_model_options.get('product_template_id'):
+                line_vals[line_model_options.get('product_template_id')] = product.product_tmpl_id.id
+            if line_model_options.get('parent_id'):
+                line_vals[line_model_options.get('parent_id')] = parent.id
+
+            logger.info('Creating %s: %s', line_model, line_vals)
+            line = self.env[line_model].create(line_vals)
+            logger.info('Created: %s', line)
         else:
-            lines = parent.order_line.search([('konfoo_session_id', '=', session_object.id)])
-            logger.info('Updating sale.order.line %s: %s', lines, line_vals)
+            line_lookup_domain = self.get_line_lookup_domain(line_model, session_object.id)
+            lines = self.env[line_model].search(line_lookup_domain)
+            logger.info('Updating %s: %s', lines, line_vals)
             lines.write(line_vals)
+            logger.info('Updated: %s', lines)
 
     @api.model
     def process_aggregated_data(self, product_tmpl_id, agg_data, parent=None):
@@ -711,3 +754,17 @@ class KonfooAPI(models.AbstractModel):
         if not url:
             raise UserError(_('Konfoo URL is not configured'))
         return url
+
+    @api.model
+    def _validate_konfoo_models(self, parent_model, line_model):
+        if not parent_model:
+            parent_model = self.get_parent_model()
+        if not line_model:
+            line_model = self.get_line_model()
+
+        if parent_model not in self.env:
+            raise UserError(_('Konfoo parent model not found: %s', parent_model))
+        if line_model not in self.env:
+            raise UserError(_('Konfoo line model not found: %s', line_model))
+
+        return parent_model, line_model

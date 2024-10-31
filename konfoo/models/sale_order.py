@@ -79,4 +79,14 @@ class SaleOrderLine(models.Model):
         self.ensure_one()
         if not self.product_id or not self.product_id.konfoo_session_id:
             return
-        self.env['konfoo.api'].duplicate(self.order_id.id, self.product_id.konfoo_session_id.konfoo_session_id)
+        self.env['konfoo.api'].duplicate(
+            self.order_id.id, self.product_id.konfoo_session_id.konfoo_session_id, 'sale.order', 'sale.order.line')
+
+    @api.model
+    def konfoo_options(self):
+        return dict(
+            quantity='product_uom_qty',
+            uom='product_uom',
+            product_id='product_id',
+            parent_id='order_id',
+        )
