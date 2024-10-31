@@ -11,10 +11,11 @@ if version_info[:2] <= (18, 0):
     JSON_CONTROLLER_TYPE = 'json'
 
 class KonfooController(http.Controller):
+
     @http.route('/konfoo/create', type=JSON_CONTROLLER_TYPE, auth='user')
-    def create(self, sale_order_id, session):
+    def create(self, res_id, session, parent_model, line_model):
         konfoo_api = request.env['konfoo.api']
-        konfoo_api.create_so_line_from_session(sale_order_id, session)
+        konfoo_api.create_from_session(res_id, session, parent_model, line_model)
 
     @http.route('/konfoo-client', type=JSON_CONTROLLER_TYPE, auth='user')
     def get_client_params(self):
