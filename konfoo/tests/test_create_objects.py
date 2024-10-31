@@ -226,7 +226,7 @@ class TestKonfooCreateObjects(TransactionCase):
             }
         """)
 
-        konfoo.process_konfoo_session(ctx, '01SSSSSSSSSSSSSSSSSSSSSSS0', dict(), data, sale_order)
+        konfoo.process_konfoo_session(ctx, '01SSSSSSSSSSSSSSSSSSSSSSS0', dict(), data, sale_order, 'sale.order.line')
 
         self.assertEqual(len(sale_order.order_line), 1)
 
@@ -240,7 +240,7 @@ class TestKonfooCreateObjects(TransactionCase):
         self.assertEqual(order_line_0.product_id.konfoo_session_id.id, session_0.id)
 
         data['meta']['name'] = 'Updated Name'
-        konfoo.process_konfoo_session(ctx, '01SSSSSSSSSSSSSSSSSSSSSSS1', dict(), data, sale_order)
+        konfoo.process_konfoo_session(ctx, '01SSSSSSSSSSSSSSSSSSSSSSS1', dict(), data, sale_order, 'sale.order.line')
 
         self.assertEqual(len(sale_order.order_line), 2)
         self.assertEqual(sale_order.order_line[0].id, order_line_0.id)
