@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 17.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-10-31 11:42+0000\n"
-"PO-Revision-Date: 2024-10-31 11:42+0000\n"
+"POT-Creation-Date: 2024-11-06 11:49+0000\n"
+"PO-Revision-Date: 2024-11-06 11:49+0000\n"
 "Last-Translator: \n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
@@ -806,7 +806,13 @@ msgstr "Konfoo konteksti loomine ebaõnnestus"
 
 #. module: konfoo
 #. odoo-python
-#: code:addons/konfoo/models/res_config_settings.py:0
+#: code:addons/konfoo/models/konfoo_api.py:0
+#, python-format
+msgid "Unable to create object KonfooTranslations"
+msgstr "Konfoo tõlkeobjekti loomine ebaõnnestus"
+
+#. module: konfoo
+#. odoo-python
 #: code:addons/konfoo/models/res_config_settings.py:0
 #, python-format
 msgid "Unexpected response from Konfoo: %s"
