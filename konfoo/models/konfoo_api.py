@@ -1,4 +1,5 @@
 from odoo import api, models, _
+from odoo.release import version_info
 from odoo.exceptions import UserError, ValidationError
 from odoo.tools.safe_eval import safe_eval
 from os import environ
@@ -46,6 +47,60 @@ def safe_eval_objects(eval_str, objects_map, instance_id):
         instance_object = objects_map.get(make_cache_key(node.id, instance_id))
         domain_variables[node.id] = getattr(instance_object, 'id', 0)
     return safe_eval(eval_str, domain_variables)
+
+
+class KonfooTranslations(object):
+    default_lang = 'en_US'
+    env = None
+
+    def _validate_translations_map(self):
+        installed_langs = [code for code, _ in self.env['res.lang'].get_installed()]
+        for lang in list(self.map_translations.keys()):
+            if lang not in installed_langs:
+                del self.map_translations[lang]
+                logger.warning('Ignoring "%s" translation - language not installed', lang)
+            elif not isinstance(self.map_translations[lang], str):
+                del self.map_translations[lang]
+                logger.warning('Ignoring "%s" translation - value not string', lang)
+
+    def __init__(self, env, values):
+        if not env and not values:
+            raise UserError(_('Unable to create object KonfooTranslations'))
+
+        if isinstance(values, dict):
+            translation_values = values
+        else:
+            translation_values = {self.default_lang: values}
+
+        self.default_lang = env.user.company_id.partner_id.lang
+        self.map_translations = translation_values
+        self.env = env
+
+        self._validate_translations_map()
+
+    def __getitem__(self, key):
+        return self.map_translations[key]
+
+    def __setitem__(self, key, value):
+        self.map_translations[key] = value
+        self._validate_translations_map()
+
+    def update(self, dictionary):
+        self.map_translations.update(dictionary)
+        self._validate_translations_map()
+
+    def defaults(self):
+        return self.default_lang, self.map_translations[self.default_lang]
+
+    def items(self):
+        return self.map_translations.items()
+
+    def prefix(self, value):
+        for lang, translation in self.map_translations.items():
+            self.map_translations[lang] = value + translation
+
+    def __str__(self):
+        return self.map_translations.get(self.default_lang)
 
 
 class KonfooLookupDom(object):
@@ -269,17 +324,22 @@ class KonfooAPI(models.AbstractModel):
             if keyword in additional_data:
                 del additional_data[keyword]
 
-        product_name_tokens = list()
-        if use_parent_name_prefix and parent.name:
-            product_name_tokens.append(parent.name)
-
+        product_name = None
         if 'product_name' in meta:
-            product_name_tokens.append(meta['product_name'])
+            product_name = meta['product_name']
             del additional_data['product_name']
         if 'name' in meta:
-            product_name_tokens.append(meta['name'])
+            product_name = meta['name']
             del additional_data['name']
-        product_name = product_name_delimiter.join(product_name_tokens)
+
+        product_translations = KonfooTranslations(self.env, product_name)
+
+        if use_parent_name_prefix and parent.name:
+            product_translations.prefix(parent.name + product_name_delimiter)
+
+        product_lang, product_name = product_translations.defaults()
+
+        translated_data = dict(name=product_translations)
 
         for field in list(additional_data.keys()):
             if field.count('.') > 1:
@@ -314,10 +374,14 @@ class KonfooAPI(models.AbstractModel):
                 continue
 
             # Handles plain keys (currently constrained to product.product)
-            if field not in self.env['product.product']._fields:
+            model_field = self.env['product.product']._fields.get(field)
+            if not model_field:
                 del additional_data[field]
                 logger.warning('Ignoring metadata field "%s" - field does not exist in product.product', field)
                 continue
+            if model_field and model_field.translate:
+                translated_data[model_field.name] = KonfooTranslations(self.env, additional_data[model_field.name])
+                del additional_data[model_field.name]
 
         if update_if_exists and update_if_exists not in additional_data:
             logger.warning('Metadata field "update_if_exists" - field "%s" does not have value in metadata', update_if_exists)
@@ -326,12 +390,10 @@ class KonfooAPI(models.AbstractModel):
         options = dict(
             use_parent_name_prefix=use_parent_name_prefix,
             product_name_delimiter=product_name_delimiter,
-            product_name=product_name,
-            additional_data=additional_data,
             update_if_exists=update_if_exists,
         )
 
-        return template_product, product_name, additional_data, options
+        return template_product, product_name, additional_data, translated_data, options
 
     @api.model
     def process_konfoo_session(self, ctx, session_key, session_data, bom_data, parent, line_model):
@@ -340,20 +402,24 @@ class KonfooAPI(models.AbstractModel):
 
         line_vals = {}
 
-        template_product, product_name, additional_data, options = self.process_bom_metadata(
+        template_product, product_name, additional_data, translated_data, options = self.process_bom_metadata(
             bom_data, parent,
             line=line_vals,
             line_model=self.env[line_model]
         )
 
         # Default to product name if not specified by user
-        if 'name' not in line_vals:
+        # This does not work together with translated product names
+        if version_info[:2] < (16, 0) and 'name' not in line_vals:
             line_vals['name'] = product_name
 
         logger.info('Metadata processed - template=%s', template_product)
 
         (product, created) = self._konfoo_product(
-            ctx, session_object.id, template_product, product_name, additional_data=additional_data, options=options)
+            ctx, session_object.id, template_product, product_name,
+            additional_data=additional_data,
+            translated_data=translated_data,
+            options=options)
 
         logger.info('Using product: %s (%s)', product.name, product.id)
         bom, created_objects = self.process_aggregated_data(product.product_tmpl_id.id, bom_data, parent=parent)
@@ -673,7 +739,7 @@ class KonfooAPI(models.AbstractModel):
             raise UserError(_('Could not reload remote datasets: %s', str(err)))
 
     @api.model
-    def _konfoo_product(self, ctx, session_object_id, template_product_value, product_name, additional_data=None, options=None):
+    def _konfoo_product(self, ctx, session_object_id, template_product_value, product_name, additional_data=None, translated_data=None, options=None):
         product = self.env['product.product'].search([('konfoo_session_id', '=', session_object_id)], limit=1)
         create_line = False
 
@@ -698,20 +764,26 @@ class KonfooAPI(models.AbstractModel):
                 boms = self.env['mrp.bom'].search([('product_tmpl_id', '=', product.product_tmpl_id.id)])
                 logger.info('Found BOMs: %s', boms)
                 boms.unlink()
-            return product, create_line
+        else:
+            create_line = True
+            template_product = self.find_product_by_field(ctx.product_lookup_field, template_product_value)
+            if not template_product:
+                raise UserError(_('Could not find template product: "{}"'.format(template_product_value)))
 
-        template_product = self.find_product_by_field(ctx.product_lookup_field, template_product_value)
-        if not template_product:
-            raise UserError(_('Could not find template product: "{}"'.format(template_product_value)))
+            if template_product.bom_count > 0:
+                raise UserError(_('Template product should not have BOMs defined'))
 
-        if template_product.bom_count > 0:
-            raise UserError(_('Template product should not have BOMs defined'))
+            create = dict(name=product_name, konfoo_session_id=session_object_id)
+            if additional_data is not None:
+                create.update(additional_data)
+            product = template_product.copy(create)
 
-        create = dict(name=product_name, konfoo_session_id=session_object_id)
-        if additional_data is not None:
-            create.update(additional_data)
-        product = template_product.with_context({'lang': 'en_US'}).copy(create)
-        return product, True
+        if translated_data is not None:
+            for field, translations in translated_data.items():
+                for lang, value in translations.items():
+                    product.with_context({"lang": lang}).write({field: value})
+
+        return product, create_line
 
     @api.model
     def _create_or_update_konfoo_session(self, session_id, session_data, bom_data):

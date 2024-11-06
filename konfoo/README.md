@@ -52,6 +52,8 @@ If you do not need a parameter to be set then the value can be `None` or the key
 Changelog
 ---------
 
+- 1.10.0
+    - Ability to receive `meta` product field values as translation dict
 - 1.9.0
     - Ability to use Konfoo in other models besides `sale.order`
 - 1.8.1
