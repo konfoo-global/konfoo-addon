@@ -50,7 +50,8 @@ def safe_eval_objects(eval_str, objects_map, instance_id):
 
 
 class KonfooTranslations(object):
-    default_lang = 'en_US'
+    map_translations = None
+    default_lang = None
     env = None
 
     def _validate_translations_map(self):
@@ -67,13 +68,14 @@ class KonfooTranslations(object):
         if not env and not values:
             raise UserError(_('Unable to create object KonfooTranslations'))
 
+        company_lang = env.user.company_id.partner_id.lang
         if isinstance(values, dict):
             translation_values = values
         else:
-            translation_values = {self.default_lang: values}
+            translation_values = {company_lang: values}
 
-        self.default_lang = env.user.company_id.partner_id.lang
         self.map_translations = translation_values
+        self.default_lang = company_lang
         self.env = env
 
         self._validate_translations_map()
@@ -100,7 +102,7 @@ class KonfooTranslations(object):
             self.map_translations[lang] = value + translation
 
     def __str__(self):
-        return self.map_translations.get(self.default_lang)
+        return self.map_translations[self.default_lang]
 
 
 class KonfooLookupDom(object):
