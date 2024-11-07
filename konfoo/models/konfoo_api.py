@@ -56,13 +56,14 @@ class KonfooTranslations(object):
 
     def _validate_translations_map(self):
         installed_langs = [code for code, _ in self.env['res.lang'].get_installed()]
-        for lang in list(self.map_translations.keys()):
-            if lang not in installed_langs:
-                del self.map_translations[lang]
-                logger.warning('Ignoring "%s" translation - language not installed', lang)
-            elif not isinstance(self.map_translations[lang], str):
-                del self.map_translations[lang]
-                logger.warning('Ignoring "%s" translation - value not string', lang)
+        unavailable_langs = [l for l in self.map_translations.keys() if l not in installed_langs]
+        if len(unavailable_langs) > 0:
+            raise ValidationError(_(
+                'Konfoo translations contain inactive lang. codes "%s"', ', '.join(unavailable_langs)))
+
+        if self.default_lang not in self.map_translations.keys():
+            raise ValidationError(_(
+                'Konfoo translations must contain company lang. code "%s"', self.default_lang))
 
     def __init__(self, env, values):
         if not env and not values:

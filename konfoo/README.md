@@ -54,6 +54,7 @@ Changelog
 
 - 1.10.1
     - Fix default_lang when KonfooTranslations initialized with string instead of dict
+    - Make translations object raise ValidationError when data discrepencies
 - 1.10.0
     - Ability to receive `meta` product field values as translation dict
 - 1.9.0
