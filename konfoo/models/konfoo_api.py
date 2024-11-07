@@ -1,4 +1,4 @@
-from odoo import api, models, _
+from odoo import api, models, tools, _
 from odoo.release import version_info
 from odoo.exceptions import UserError, ValidationError
 from odoo.tools.safe_eval import safe_eval
@@ -69,14 +69,14 @@ class KonfooTranslations(object):
         if not env and not values:
             raise UserError(_('Unable to create object KonfooTranslations'))
 
-        company_lang = env.user.company_id.partner_id.lang
+        default_lang = tools.get_lang(env).code
         if isinstance(values, dict):
             translation_values = values
         else:
-            translation_values = {company_lang: values}
+            translation_values = {default_lang: values}
 
         self.map_translations = translation_values
-        self.default_lang = company_lang
+        self.default_lang = default_lang
         self.env = env
 
         self._validate_translations_map()
