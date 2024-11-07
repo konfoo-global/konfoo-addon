@@ -50,30 +50,33 @@ def safe_eval_objects(eval_str, objects_map, instance_id):
 
 
 class KonfooTranslations(object):
-    default_lang = 'en_US'
+    map_translations = None
+    default_lang = None
     env = None
 
     def _validate_translations_map(self):
         installed_langs = [code for code, _ in self.env['res.lang'].get_installed()]
-        for lang in list(self.map_translations.keys()):
-            if lang not in installed_langs:
-                del self.map_translations[lang]
-                logger.warning('Ignoring "%s" translation - language not installed', lang)
-            elif not isinstance(self.map_translations[lang], str):
-                del self.map_translations[lang]
-                logger.warning('Ignoring "%s" translation - value not string', lang)
+        unavailable_langs = [l for l in self.map_translations.keys() if l not in installed_langs]
+        if len(unavailable_langs) > 0:
+            raise ValidationError(_(
+                'Konfoo translations contain inactive lang. codes "%s"', ', '.join(unavailable_langs)))
+
+        if self.default_lang not in self.map_translations.keys():
+            raise ValidationError(_(
+                'Konfoo translations must contain company lang. code "%s"', self.default_lang))
 
     def __init__(self, env, values):
         if not env and not values:
             raise UserError(_('Unable to create object KonfooTranslations'))
 
+        company_lang = env.user.company_id.partner_id.lang
         if isinstance(values, dict):
             translation_values = values
         else:
-            translation_values = {self.default_lang: values}
+            translation_values = {company_lang: values}
 
-        self.default_lang = env.user.company_id.partner_id.lang
         self.map_translations = translation_values
+        self.default_lang = company_lang
         self.env = env
 
         self._validate_translations_map()
@@ -100,7 +103,7 @@ class KonfooTranslations(object):
             self.map_translations[lang] = value + translation
 
     def __str__(self):
-        return self.map_translations.get(self.default_lang)
+        return self.map_translations[self.default_lang]
 
 
 class KonfooLookupDom(object):

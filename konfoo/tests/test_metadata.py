@@ -12,12 +12,12 @@ class TestKonfooMetadata(TransactionCase):
     def setUp(self):
         super().setUp()
 
-        company = self.env.user.company_id
+        self.company = self.env.user.company_id
 
         # NOTE: the values do not matter 'cause we avoid doing any requests
-        company.konfoo_url = company.konfoo_url_staging = 'http://localhost:8000'
-        company.konfoo_client_id_staging = company.konfoo_client_id = 'test'
-        company.konfoo_default_uom_id = self.env.ref('uom.product_uom_unit').id
+        self.company.konfoo_url = self.company.konfoo_url_staging = 'http://localhost:8000'
+        self.company.konfoo_client_id_staging = self.company.konfoo_client_id = 'test'
+        self.company.konfoo_default_uom_id = self.env.ref('uom.product_uom_unit').id
 
         if version_info[:2] < (18, 0):
             self.env['product.product'].create({
@@ -102,30 +102,20 @@ class TestKonfooMetadata(TransactionCase):
         konfoo = self.env['konfoo.api']
         self.assertIsNotNone(konfoo)
 
-        self.env['res.lang']._activate_lang("et_EE")
+        self.env['res.lang']._activate_lang('et_EE')
+        self.company.partner_id.write(dict(lang='et_EE'))
 
         data = json.loads("""
             {
-                "data": [
-                    {
-                        "__id__": "bom_line",
-                        "__instance__": "02YYYYYYYYYYYYYYYYYYYYYYYY",
-                        "model": "mrp.bom.line",
-                        "product_id := product.product.default_code": "MOCK-PRODUCT",
-                        "product_qty": 2,
-                        "product_uom_id := uom.uom.name": "Units"
-                    }
-                ],
+                "data": [],
                 "meta": {
                     "name": {
-                        "et_EE": "Test Konfigureeritud Toode",
-                        "en_US": "Mock Configured Product",
-                        "et_US": "Invalid LANG Option"
+                        "et_EE": "Mock Configured Product EE",
+                        "en_US": "Mock Configured Product US"
                     },
                     "description": {
-                        "et_EE": "<b>Toote Kirjeldus</b>",
-                        "en_US": "<b>Product Description</b>",
-                        "et_US": "<b>Invalid LANG Option</b>"
+                        "et_EE": "<b>Product Description EE</b>",
+                        "en_US": "<b>Product Description US</b>"
                     },
                     "template_product": "MOCK-KONFOO-TEMPLATE",
                     "product_name_delimiter": "-",
@@ -150,9 +140,6 @@ class TestKonfooMetadata(TransactionCase):
         konfoo.process_konfoo_session(ctx, '02XXXXXXXXXXXXXXXXXXXXXXXX', dict(), data, order, 'sale.order.line')
         self.assertEqual(order.origin, 'Made by Konfoo')
         self.assertEqual(len(order.order_line), 1)
-        if version_info[:2] < (16, 0):
-            self.assertEqual(order.order_line.name, f'{order.name}-Mock Configured Product')
-        else:
-            self.assertEqual(order.order_line.name, f'{order.name}-Test Konfigureeritud Toode')
-        self.assertEqual(order.order_line.product_id.description, '<b>Product Description</b>')
-        self.assertEqual(order.order_line.product_id.name, f'{order.name}-Mock Configured Product')
+        self.assertEqual(order.order_line.name, f'{order.name}-Mock Configured Product EE')
+        self.assertEqual(order.order_line.product_id.description, '<b>Product Description US</b>')
+        self.assertEqual(order.order_line.product_id.name, f'{order.name}-Mock Configured Product US')
