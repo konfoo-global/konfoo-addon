@@ -1,4 +1,4 @@
-from odoo import api, models, _
+from odoo import api, models, fields, _
 from odoo.release import version_info
 from odoo.exceptions import UserError, ValidationError
 from odoo.tools.safe_eval import safe_eval
@@ -459,9 +459,15 @@ class KonfooAPI(models.AbstractModel):
 
     @api.model
     def process_aggregated_data(self, product_tmpl_id, agg_data, parent=None):
-        bom = self.env['mrp.bom'].create({
-            'product_tmpl_id': product_tmpl_id,
-        })
+        bom = self.env['mrp.bom'].search([
+            ('product_tmpl_id', '=', product_tmpl_id),
+            ('active', '=', True)
+        ], limit=1)  # pick first ordered by sequence
+
+        if not bom:
+            bom = self.env['mrp.bom'].create({
+                'product_tmpl_id': product_tmpl_id,
+            })
 
         allowed_models = self.allowed_models()
         map_cache_objects = dict()
@@ -763,10 +769,17 @@ class KonfooAPI(models.AbstractModel):
             product.write(vals)
 
             if product.bom_count > 0:
-                logger.info('Removing existing BOMs from the product %s', product)
-                boms = self.env['mrp.bom'].search([('product_tmpl_id', '=', product.product_tmpl_id.id)])
-                logger.info('Found BOMs: %s', boms)
-                boms.unlink()
+                boms = self.env['mrp.bom'].search([
+                    ('product_tmpl_id', '=', product.product_tmpl_id.id), ('active', '=', True)])
+                for existing_bom in boms:
+                    logger.info(
+                        f'{product.name or product}: Archiving copy of existing BOM: {existing_bom}')
+                    _archived = existing_bom.copy({
+                        'active': False,
+                        'code': f'{existing_bom.code} ({_("Deprecated")} {fields.Date.today()})',
+                    })
+                    existing_bom.bom_line_ids.unlink()
+                    existing_bom.operation_ids.unlink()
         else:
             create_line = True
             template_product = self.find_product_by_field(ctx.product_lookup_field, template_product_value)
