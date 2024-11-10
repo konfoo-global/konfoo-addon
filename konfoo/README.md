@@ -52,9 +52,12 @@ If you do not need a parameter to be set then the value can be `None` or the key
 Changelog
 ---------
 
+- 1.11.0
+    - Add support for updating existing BOM instead of deleting and creating a new one
+    - Add support for archiving a copy of the deprecated BOMs for posterity
 - 1.10.1
     - Fix default_lang when KonfooTranslations initialized with string instead of dict
-    - Make translations object raise ValidationError when data discrepencies
+    - Make translations object raise ValidationError when data discrepancies
 - 1.10.0
     - Ability to receive `meta` product field values as translation dict
 - 1.9.0

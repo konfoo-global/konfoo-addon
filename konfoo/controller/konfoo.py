@@ -10,6 +10,7 @@ JSON_CONTROLLER_TYPE = 'jsonrpc'
 if version_info[:2] <= (18, 0):
     JSON_CONTROLLER_TYPE = 'json'
 
+
 class KonfooController(http.Controller):
 
     @http.route('/konfoo/create', type=JSON_CONTROLLER_TYPE, auth='user')
