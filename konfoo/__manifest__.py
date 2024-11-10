@@ -1,7 +1,7 @@
 # noinspection PyStatementEffect
 {
     'name': 'Konfoo',
-    'version': '1.10.1',
+    'version': '1.11.0',
     'author': 'Konfoo',
     'website': 'https://konfoo.com',
     'license': 'Other proprietary',

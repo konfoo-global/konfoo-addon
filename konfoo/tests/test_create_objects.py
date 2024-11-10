@@ -234,10 +234,12 @@ class TestKonfooCreateObjects(TransactionCase):
         self.assertAlmostEqual(order_line_0.price_unit, 123.0)
         self.assertEqual(order_line_0.product_id.name, 'Initial Name')
 
+        boms_0 = self.env['mrp.bom'].search([('product_tmpl_id', '=', order_line_0.product_id.product_tmpl_id.id)])
         session_0 = self.env['konfoo.session'].search([('konfoo_session_id', '=', '01SSSSSSSSSSSSSSSSSSSSSSS0')])
         self.assertEqual(len(session_0), 1)
         self.assertEqual(session_0.konfoo_session_id, '01SSSSSSSSSSSSSSSSSSSSSSS0')
         self.assertEqual(order_line_0.product_id.konfoo_session_id.id, session_0.id)
+        self.assertEqual(len(boms_0.bom_line_ids), 1)
 
         data['meta']['name'] = 'Updated Name'
         konfoo.process_konfoo_session(ctx, '01SSSSSSSSSSSSSSSSSSSSSSS1', dict(), data, sale_order, 'sale.order.line')
@@ -250,6 +252,10 @@ class TestKonfooCreateObjects(TransactionCase):
         self.assertEqual(order_line_1.product_id.name, 'Updated Name')
         self.assertEqual(order_line_0.product_id.name, 'Updated Name')
         self.assertEqual(order_line_0.product_id.id, order_line_1.product_id.id)
+
+        boms_1 = self.env['mrp.bom'].search([('product_tmpl_id', '=', order_line_1.product_id.product_tmpl_id.id)])
+        self.assertEqual(boms_0.ids, boms_1.ids)
+        self.assertEqual(len(boms_1.bom_line_ids), 1)
 
         session_1 = self.env['konfoo.session'].search([('konfoo_session_id', '=', '01SSSSSSSSSSSSSSSSSSSSSSS1')])
         self.assertEqual(len(session_1), 1)
