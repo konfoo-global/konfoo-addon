@@ -8,7 +8,11 @@ import { standardWidgetProps } from '@web/views/widgets/standard_widget_props';
 const KONFOO_VERBOSE = false;
 
 export class KonfooComponent extends owl.Component {
-    static props = { ...standardWidgetProps, };
+    static props = {
+        ...standardWidgetProps,
+        parentModel: { type: String, optional: true },
+        lineModel: { type: String, optional: true },
+    };
     static template = owl.xml`
         <div t-if="state.isOpen" class="o_konfoo_container">
             <iframe class="o_konfoo_iframe" t-att-src="state.config.url" t-on-load="onLoad"></iframe>
@@ -18,6 +22,8 @@ export class KonfooComponent extends owl.Component {
     async setup() {
         this.rpc = useService('rpc');
         this.notifications = useService('notification');
+        this.props.parentModel = this.props.parentModel || 'sale.order';
+        this.props.lineModel = this.props.lineModel || 'sale.order.line';
 
         this.state = owl.useState({
             isOpen: false,
@@ -98,8 +104,10 @@ export class KonfooComponent extends owl.Component {
                     }
 
                     self.rpc('/konfoo/create', {
-                        sale_order_id: self.state.record_id,
+                        res_id: self.state.record_id,
                         session: e.data.params.session,
+                        parent_model: self.props.parentModel,
+                        line_model: self.props.lineModel,
                     })
                     .then(function (_response) {
                         if (KONFOO_VERBOSE)

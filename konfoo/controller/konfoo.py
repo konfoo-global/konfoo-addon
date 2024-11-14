@@ -14,7 +14,7 @@ if version_info[:2] <= (18, 0):
 class KonfooController(http.Controller):
 
     @http.route('/konfoo/create', type=JSON_CONTROLLER_TYPE, auth='user')
-    def create(self, res_id, session, parent_model, line_model):
+    def create(self, res_id, session, parent_model=None, line_model=None):
         konfoo_api = request.env['konfoo.api']
         konfoo_api.create_from_session(res_id, session, parent_model, line_model)
 
