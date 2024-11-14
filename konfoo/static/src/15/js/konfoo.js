@@ -105,7 +105,7 @@ class KonfooComponent extends owl.Component {
                     self.rpc({
                         route: '/konfoo/create',
                         params: {
-                            sale_order_id: self.state.record_id,
+                            res_id: self.state.record_id,
                             session: e.data.params.session,
                         }
                     })
