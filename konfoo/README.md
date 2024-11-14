@@ -52,6 +52,8 @@ If you do not need a parameter to be set then the value can be `None` or the key
 Changelog
 ---------
 
+- 1.12.0
+    - Added `use_if_exists` option to `meta` block
 - 1.11.0
     - Add support for updating existing BOM instead of deleting and creating a new one
     - Add support for archiving a copy of the deprecated BOMs for posterity

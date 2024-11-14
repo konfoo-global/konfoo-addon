@@ -26,6 +26,7 @@ METADATA_KEYWORDS = (
     'use_parent_name_prefix',
     'product_name_delimiter',
     'update_if_exists',
+    'use_if_exists',
 )
 
 
@@ -322,6 +323,15 @@ class KonfooAPI(models.AbstractModel):
             logger.warning('Metadata field "update_if_exists" - field "%s" does not exist', update_if_exists)
             update_if_exists = False
 
+        use_if_exists = meta.get('use_if_exists', False)
+        if use_if_exists and not isinstance(use_if_exists, str):
+            logger.warning('Metadata field "use_if_exists" - value should be a field name, found "%s"', use_if_exists)
+            use_if_exists = False
+
+        if use_if_exists and use_if_exists not in self.env['product.product']._fields:
+            logger.warning('Metadata field "use_if_exists" - field "%s" does not exist', use_if_exists)
+            use_if_exists = False
+
         additional_data = meta.copy()
         for keyword in METADATA_KEYWORDS:
             if keyword in additional_data:
@@ -389,11 +399,15 @@ class KonfooAPI(models.AbstractModel):
         if update_if_exists and update_if_exists not in additional_data:
             logger.warning('Metadata field "update_if_exists" - field "%s" does not have value in metadata', update_if_exists)
             update_if_exists = False
+        if use_if_exists and use_if_exists not in additional_data:
+            logger.warning('Metadata field "use_if_exists" - field "%s" does not have value in metadata', use_if_exists)
+            use_if_exists = False
 
         options = dict(
             use_parent_name_prefix=use_parent_name_prefix,
             product_name_delimiter=product_name_delimiter,
             update_if_exists=update_if_exists,
+            use_if_exists=use_if_exists,
         )
 
         return template_product, product_name, additional_data, translated_data, options
@@ -418,18 +432,18 @@ class KonfooAPI(models.AbstractModel):
 
         logger.info('Metadata processed - template=%s', template_product)
 
-        (product, created) = self._konfoo_product(
+        (product, created, ignore_rules) = self._konfoo_product(
             ctx, session_object.id, template_product, product_name,
             additional_data=additional_data,
             translated_data=translated_data,
             options=options)
 
-        logger.info('Using product: %s (%s)', product.name, product.id)
-        bom, created_objects = self.process_aggregated_data(product.product_tmpl_id.id, bom_data, parent=parent)
-        logger.info('Created BOM: %s', bom.id)
-
-        logger.info('Updating cost')
-        product.button_bom_cost()
+        logger.info('Using product: %s (id=%s)', product.name, product.id)
+        if not ignore_rules:
+            bom, created_objects = self.process_aggregated_data(product.product_tmpl_id.id, bom_data, parent=parent)
+            logger.info('Created BOM: %s', bom.id)
+            logger.info('Updating cost')
+            product.button_bom_cost()
 
         if created:
             line_model_options = self.get_default_line_options()
@@ -748,38 +762,62 @@ class KonfooAPI(models.AbstractModel):
             raise UserError(_('Could not reload remote datasets: %s', str(err)))
 
     @api.model
+    def _main_product_lookup(self, options, additional_data):
+        if not options or not additional_data:
+            return None
+
+        if options.get('update_if_exists'):
+            return self.env['product.product'].search([
+                (options.get('update_if_exists'), '=', additional_data.get(options.get('update_if_exists')))
+            ], limit=1)
+
+        if options.get('use_if_exists'):
+            return self.env['product.product'].search([
+                (options.get('use_if_exists'), '=', additional_data.get(options.get('use_if_exists')))
+            ], limit=1)
+
+    @api.model
     def _konfoo_product(self, ctx, session_object_id, template_product_value, product_name, additional_data=None, translated_data=None, options=None):
         product = self.env['product.product'].search([('konfoo_session_id', '=', session_object_id)], limit=1)
         create_line = False
+        ignore_rules = False
 
-        if not product and options and options.get('update_if_exists'):
-            product = self.env['product.product'].search([
-                (options.get('update_if_exists'), '=', additional_data.get(options.get('update_if_exists')))
-            ], limit=1)
+        if not product:
+            product = self._main_product_lookup(options, additional_data)
             if product:
                 create_line = True
                 # the old session gets discarded in this case
                 product.write(dict(konfoo_session_id=session_object_id))
+                logger.info('Found existing product: %s (id=%s)', product.name, product.id)
 
         if product:
-            logger.info('Reconfiguring product: %s (%s)', product.name, product.id)
-            vals = dict(name=product_name)
-            if additional_data is not None:
-                vals.update(additional_data)
-            product.write(vals)
+            if options.get('use_if_exists'):
+                logger.info('Reusing product: %s (id=%s) - nothing was changed', product.name, product.id)
+                ignore_rules = True
+            else:
+                logger.info('Reconfiguring product: %s (id=%s)', product.name, product.id)
+                vals = dict(name=product_name)
+                if additional_data is not None:
+                    vals.update(additional_data)
+                product.write(vals)
+                if translated_data is not None:
+                    for field, translations in translated_data.items():
+                        for lang, value in translations.items():
+                            product.with_context({"lang": lang}).write({field: value})
 
-            if product.bom_count > 0:
-                boms = self.env['mrp.bom'].search([
-                    ('product_tmpl_id', '=', product.product_tmpl_id.id), ('active', '=', True)])
-                for existing_bom in boms:
-                    logger.info(
-                        f'{product.name or product}: Archiving copy of existing BOM: {existing_bom}')
-                    _archived = existing_bom.copy({
-                        'active': False,
-                        'code': f'{existing_bom.code} ({_("Deprecated")} {fields.Date.today()})',
-                    })
-                    existing_bom.bom_line_ids.unlink()
-                    existing_bom.operation_ids.unlink()
+                if product.bom_count > 0:
+                    boms = self.env['mrp.bom'].search([
+                        ('product_tmpl_id', '=', product.product_tmpl_id.id), ('active', '=', True)])
+                    for existing_bom in boms:
+                        logger.info(
+                            f'Archiving copy of existing BOM: {existing_bom} '
+                            f'("{product.name or product}", id={product.id})')
+                        _archived = existing_bom.copy({
+                            'active': False,
+                            'code': f'{existing_bom.code} ({_("Deprecated")} {fields.Date.today()})',
+                        })
+                        existing_bom.bom_line_ids.unlink()
+                        existing_bom.operation_ids.unlink()
         else:
             create_line = True
             template_product = self.find_product_by_field(ctx.product_lookup_field, template_product_value)
@@ -793,13 +831,12 @@ class KonfooAPI(models.AbstractModel):
             if additional_data is not None:
                 create.update(additional_data)
             product = template_product.copy(create)
+            if translated_data is not None:
+                for field, translations in translated_data.items():
+                    for lang, value in translations.items():
+                        product.with_context({"lang": lang}).write({field: value})
 
-        if translated_data is not None:
-            for field, translations in translated_data.items():
-                for lang, value in translations.items():
-                    product.with_context({"lang": lang}).write({field: value})
-
-        return product, create_line
+        return product, create_line, ignore_rules
 
     @api.model
     def _create_or_update_konfoo_session(self, session_id, session_data, bom_data):
