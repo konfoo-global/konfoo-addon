@@ -184,12 +184,12 @@ class TestKonfooCreateObjects(TransactionCase):
         company.konfoo_default_uom_id = self.env.ref('uom.product_uom_unit').id
         ctx = konfoo.configure()
 
-        template_product = self._create_mock_product({
+        self._create_mock_product({
             'name': '[MOCK] Product Template',
             'default_code': 'KONFOO-TEMPLATE-vqctTr00'
         })
 
-        component = self._create_mock_product({
+        self._create_mock_product({
             'name': '[MOCK] Component 1',
             'default_code': 'COMPONENT-1'
         })
@@ -235,6 +235,7 @@ class TestKonfooCreateObjects(TransactionCase):
         self.assertEqual(order_line_0.product_id.name, 'Initial Name')
 
         boms_0 = self.env['mrp.bom'].search([('product_tmpl_id', '=', order_line_0.product_id.product_tmpl_id.id)])
+        bom_line_ids_0 = boms_0.bom_line_ids.ids
         session_0 = self.env['konfoo.session'].search([('konfoo_session_id', '=', '01SSSSSSSSSSSSSSSSSSSSSSS0')])
         self.assertEqual(len(session_0), 1)
         self.assertEqual(session_0.konfoo_session_id, '01SSSSSSSSSSSSSSSSSSSSSSS0')
@@ -254,8 +255,104 @@ class TestKonfooCreateObjects(TransactionCase):
         self.assertEqual(order_line_0.product_id.id, order_line_1.product_id.id)
 
         boms_1 = self.env['mrp.bom'].search([('product_tmpl_id', '=', order_line_1.product_id.product_tmpl_id.id)])
+        bom_line_ids_1 = boms_1.bom_line_ids.ids
         self.assertEqual(boms_0.ids, boms_1.ids)
         self.assertEqual(len(boms_1.bom_line_ids), 1)
+        self.assertNotEqual(bom_line_ids_0, bom_line_ids_1)  # should be fresh lines in the bom
+
+        session_1 = self.env['konfoo.session'].search([('konfoo_session_id', '=', '01SSSSSSSSSSSSSSSSSSSSSSS1')])
+        self.assertEqual(len(session_1), 1)
+        self.assertEqual(session_1.konfoo_session_id, '01SSSSSSSSSSSSSSSSSSSSSSS1')
+        self.assertEqual(order_line_1.product_id.konfoo_session_id.id, session_1.id)
+        self.assertEqual(order_line_0.product_id.konfoo_session_id.id, session_1.id)
+
+    def test_use_existing_if_exists(self):
+        konfoo = self.env['konfoo.api']
+        self.assertIsNotNone(konfoo)
+
+        company = self.env.user.company_id
+
+        # NOTE: the values do not matter 'cause we avoid doing any requests
+        company.konfoo_url = company.konfoo_url_staging = 'http://localhost:8000'
+        company.konfoo_client_id_staging = company.konfoo_client_id = 'test'
+        company.konfoo_default_uom_id = self.env.ref('uom.product_uom_unit').id
+        ctx = konfoo.configure()
+
+        self._create_mock_product({
+            'name': '[MOCK] Product Template',
+            'default_code': 'KONFOO-TEMPLATE-w3kvp6tp'
+        })
+
+        self._create_mock_product({
+            'name': '[MOCK] Component 1',
+            'default_code': 'COMPONENT-1'
+        })
+
+        partner_form = Form(self.env['res.partner'])
+        partner_form.name = 'Test Partner'
+        partner = partner_form.save()
+
+        sale_order_form = Form(self.env['sale.order'])
+        sale_order_form.partner_id = partner
+        sale_order = sale_order_form.save()
+
+        data = json.loads("""
+            {
+                "meta": {
+                    "default_code": "ACIED",
+                    "line.price_unit": 123.0,
+                    "name": "Initial Name",
+                    "template_product": "KONFOO-TEMPLATE-w3kvp6tp",
+                    "use_parent_name_prefix": false,
+                    "use_if_exists": "default_code"
+                },
+                "name": "Bill of materials",
+                "data": [
+                    {
+                        "__id__": "component_1",
+                        "__instance__": "01AAAAAAAAAAAAAAAAAAAAAAAA",
+                        "model": "mrp.bom.line",
+                        "product_id := product.product.default_code": "COMPONENT-1",
+                        "product_qty": 1,
+                        "product_uom_id := uom.uom.name": "Units"
+                    }
+                ]
+            }
+        """)
+
+        konfoo.process_konfoo_session(ctx, '01SSSSSSSSSSSSSSSSSSSSSSS0', dict(), data, sale_order, 'sale.order.line')
+
+        self.assertEqual(len(sale_order.order_line), 1)
+
+        order_line_0 = sale_order.order_line[0]
+        self.assertAlmostEqual(order_line_0.price_unit, 123.0)
+        self.assertEqual(order_line_0.product_id.name, 'Initial Name')
+
+        boms_0 = self.env['mrp.bom'].search([('product_tmpl_id', '=', order_line_0.product_id.product_tmpl_id.id)])
+        bom_line_ids_0 = boms_0.bom_line_ids.ids
+        session_0 = self.env['konfoo.session'].search([('konfoo_session_id', '=', '01SSSSSSSSSSSSSSSSSSSSSSS0')])
+        self.assertEqual(len(session_0), 1)
+        self.assertEqual(session_0.konfoo_session_id, '01SSSSSSSSSSSSSSSSSSSSSSS0')
+        self.assertEqual(order_line_0.product_id.konfoo_session_id.id, session_0.id)
+        self.assertEqual(len(boms_0.bom_line_ids), 1)
+
+        data['meta']['name'] = 'Updated Name'
+        konfoo.process_konfoo_session(ctx, '01SSSSSSSSSSSSSSSSSSSSSSS1', dict(), data, sale_order, 'sale.order.line')
+
+        self.assertEqual(len(sale_order.order_line), 2)
+        self.assertEqual(sale_order.order_line[0].id, order_line_0.id)
+
+        order_line_1 = sale_order.order_line[1]
+        self.assertAlmostEqual(order_line_1.price_unit, 123.0)
+        self.assertEqual(order_line_1.product_id.name, 'Initial Name')
+        self.assertEqual(order_line_0.product_id.name, 'Initial Name')
+        self.assertEqual(order_line_0.product_id.id, order_line_1.product_id.id)
+
+        boms_1 = self.env['mrp.bom'].search([('product_tmpl_id', '=', order_line_1.product_id.product_tmpl_id.id)])
+        bom_line_ids_1 = boms_1.bom_line_ids.ids
+        self.assertEqual(boms_0.ids, boms_1.ids)
+        self.assertEqual(len(boms_1.bom_line_ids), 1)
+        self.assertEqual(bom_line_ids_0, bom_line_ids_1)  # should be same lines in the bom
 
         session_1 = self.env['konfoo.session'].search([('konfoo_session_id', '=', '01SSSSSSSSSSSSSSSSSSSSSSS1')])
         self.assertEqual(len(session_1), 1)
