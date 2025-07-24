@@ -7,14 +7,12 @@ venv
 /docker-compose.yml
 /docker-compose.override.yml
 /dev.odoo.conf
-/psql
-/i18n.sh
-/discover-addons.sh
-/install*.sh
 
 # ci artifacts
 /test_*
 /dev_*
+/avadev_*
+/0dev_*
 
 .env
 
@@ -33,3 +31,4 @@ venv
 
 .idea
 .vscode
+*.code-workspace
