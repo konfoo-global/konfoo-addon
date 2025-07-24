@@ -3,6 +3,7 @@
 
 import { registry } from '@web/core/registry';
 import { useBus, useService } from '@web/core/utils/hooks';
+import { rpc } from '@web/core/network/rpc';
 import { standardWidgetProps } from '@web/views/widgets/standard_widget_props';
 
 // It is quite inconvenient that `odoo.info` is not available at this point.
@@ -24,7 +25,6 @@ export class KonfooComponent extends owl.Component {
     `;
 
     async setup() {
-        this.rpc = useService('rpc');
         this.notifications = useService('notification');
         this.props.parentModel = this.props.parentModel || 'sale.order';
         this.props.lineModel = this.props.lineModel || 'sale.order.line';
@@ -107,7 +107,7 @@ export class KonfooComponent extends owl.Component {
                         return;
                     }
 
-                    self.rpc('/konfoo/create', {
+                    rpc('/konfoo/create', {
                         res_id: self.state.record_id,
                         session: e.data.params.session,
                         parent_model: self.props.parentModel,
@@ -173,7 +173,7 @@ export class KonfooComponent extends owl.Component {
 
         this.updateState();
 
-        const clientConfig = await this.rpc('/konfoo-client');
+        const clientConfig = await rpc('/konfoo-client');
         if ('ok' in clientConfig && clientConfig.ok === true) {
             this.state.config = clientConfig;
         }
