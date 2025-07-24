@@ -12,6 +12,8 @@ indent_style = space
 
 [*.yml]
 indent_style = space
+
+[.github/**/*.yml]
 indent_size = 2
 
 [*.xml]

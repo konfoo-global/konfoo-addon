@@ -52,8 +52,12 @@ If you do not need a parameter to be set then the value can be `None` or the key
 Changelog
 ---------
 
-- 1.12.1
+- 1.12.3
     - Fix Odoo breaking change (>=18.0): `rpc` service is now a function
+- 1.12.2
+    - Improve edge version porting
+- 1.12.1
+    - Fix installation errors for edge version
 - 1.12.0
     - Added `use_if_exists` option to `meta` block
 - 1.11.0
