@@ -52,6 +52,8 @@ If you do not need a parameter to be set then the value can be `None` or the key
 Changelog
 ---------
 
+- 1.12.4
+    - Konfoo Widget: removed legacy record update logic from >=17.0
 - 1.12.3
     - Fix Odoo breaking change (>=18.0): `rpc` service is now a function
 - 1.12.2
