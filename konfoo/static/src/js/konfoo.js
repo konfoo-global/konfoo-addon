@@ -123,14 +123,6 @@ export class KonfooComponent extends owl.Component {
                         }
                     })
                     .then(function() {
-                        // Odoo <= 16.0
-                        if (self.props && self.props.record && self.props.record.data && 'id' in self.props.record.data && self.props.record.data.id) {
-                            if (KONFOO_VERBOSE)
-                                console.log('[odoo-konfoo] Triggering 16.0 record update');
-                            return self.props.record.update();
-                        }
-                    })
-                    .then(function() {
                         if (KONFOO_VERBOSE)
                             console.log('[odoo-konfoo] Update OK');
                     })
@@ -200,7 +192,6 @@ export class KonfooComponent extends owl.Component {
             return;
         }
 
-        // TODO: add this to parent so the entire thing transitions
         this.state.iframe.classList.add('o_konfoo_loaded');
 
         this.state.iframe.contentWindow.postMessage({
