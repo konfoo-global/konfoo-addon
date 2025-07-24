@@ -1,14 +1,14 @@
 # noinspection PyStatementEffect
 {
     'name': 'Konfoo',
-    'version': '1.12.1',
+    'version': '1.12.3',
     'author': 'Konfoo',
     'website': 'https://konfoo.com',
     'license': 'Other proprietary',
     'data': [
                 'data/cron_legacy.xml',
 
-                'security/security.xml',
+                'security/security_legacy.xml',
                 'security/ir.model.access.csv',
 
                 'views/konfoo_dataset_legacy.xml',
@@ -42,11 +42,28 @@
     ],
 
     'override': {
+        '18.0': {
+            'data': [
+                'data/cron.xml',
+
+                'security/security_legacy.xml',
+                'security/ir.model.access.csv',
+
+                'views/konfoo_dataset.xml',
+                'views/konfoo_cache.xml',
+                'views/konfoo_session.xml',
+                'views/konfoo_allowed_model.xml',
+                'views/konfoo_menus.xml',
+                'views/sale_views.xml',
+
+                'views/res_config_settings_views.xml',
+            ],
+        },
         '17.0': {
             'data': [
                 'data/cron_legacy.xml',
 
-                'security/security.xml',
+                'security/security_legacy.xml',
                 'security/ir.model.access.csv',
 
                 'views/konfoo_dataset_17.xml',
@@ -63,7 +80,7 @@
             'data': [
                 'data/cron_legacy.xml',
 
-                'security/security.xml',
+                'security/security_legacy.xml',
                 'security/ir.model.access.csv',
 
                 'views/konfoo_dataset_legacy.xml',
@@ -95,7 +112,7 @@
             'data': [
                 'data/cron_legacy.xml',
 
-                'security/security.xml',
+                'security/security_legacy.xml',
                 'security/ir.model.access.csv',
 
                 'views/konfoo_dataset_legacy.xml',

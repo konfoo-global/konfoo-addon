@@ -1,5 +1,7 @@
 from odoo import models, fields, api, _
 from .konfoo_api import KonfooContext
+from odoo.release import version_info
+
 
 import logging
 logger = logging.getLogger(__name__)
@@ -54,7 +56,7 @@ class SaleOrderLine(models.Model):
     def action_edit_konfoo_product(self):
         self.ensure_one()
         if not self.product_id or not self.product_id.konfoo_session_id:
-            return
+            return None
 
         konfoo_session_key = self.product_id.konfoo_session_id.konfoo_session_id
         ctx = KonfooContext(env=self.env, company_id=self.company_id)
@@ -84,9 +86,17 @@ class SaleOrderLine(models.Model):
 
     @api.model
     def konfoo_options(self):
-        return dict(
+        if version_info[:2] <= (18, 0):
+            return dict(
+                quantity='product_uom_qty',
+                uom='product_uom',
+                product_id='product_id',
+                parent_id='order_id',
+            )
+        else:
+            return dict(
             quantity='product_uom_qty',
-            uom='product_uom',
+            uom='product_uom_id',
             product_id='product_id',
             parent_id='order_id',
         )
