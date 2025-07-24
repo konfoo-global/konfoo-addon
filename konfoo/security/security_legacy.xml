@@ -5,22 +5,17 @@
             <field name="name">Konfoo</field>
         </record>
 
-        <record model="res.groups.privilege" id="module_privilege_konfoo">
-            <field name="name">Konfoo Privilege</field>
-            <field name="category_id" ref="module_category_konfoo" />
-        </record>
-
         <record model="res.groups" id="group_konfoo_user">
             <field name="name">Konfoo User</field>
-            <field name="user_ids" eval="[(4, ref('base.user_root'))]"/>
-            <field name="privilege_id" ref="module_privilege_konfoo"/>
+            <field name="users" eval="[(4, ref('base.user_root'))]"/>
+            <field name="category_id" ref="module_category_konfoo"/>
         </record>
 
         <record model="res.groups" id="group_konfoo_admin">
             <field name="name">Konfoo Admin</field>
-            <field name="user_ids" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
+            <field name="users" eval="[(4, ref('base.user_root')), (4, ref('base.user_admin'))]"/>
             <field name="implied_ids" eval="[(4, ref('group_konfoo_user'))]"/>
-            <field name="privilege_id" ref="module_privilege_konfoo"/>
+            <field name="category_id" ref="module_category_konfoo"/>
         </record>
     </data>
 </odoo>
