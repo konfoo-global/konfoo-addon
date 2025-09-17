@@ -1,25 +1,25 @@
 # noinspection PyStatementEffect
 {
     'name': 'Konfoo',
-    'version': '1.12.4',
+    'version': '1.12.5',
     'author': 'Konfoo',
     'website': 'https://konfoo.com',
     'license': 'Other proprietary',
     'data': [
-        'data/cron.xml',
+                'data/cron.xml',
 
-        'security/security.xml',
-        'security/ir.model.access.csv',
+                'security/security_legacy.xml',
+                'security/ir.model.access.csv',
 
-        'views/konfoo_dataset.xml',
-        'views/konfoo_cache.xml',
-        'views/konfoo_session.xml',
-        'views/konfoo_allowed_model.xml',
-        'views/konfoo_menus.xml',
-        'views/sale_views.xml',
+                'views/konfoo_dataset.xml',
+                'views/konfoo_cache.xml',
+                'views/konfoo_session.xml',
+                'views/konfoo_allowed_model.xml',
+                'views/konfoo_menus.xml',
+                'views/sale_views.xml',
 
-        'views/res_config_settings_views.xml',
-    ],
+                'views/res_config_settings_views.xml',
+            ],
     'depends': [
         'sale_management',
         'sale_margin',
@@ -78,6 +78,12 @@
 
                 'views/res_config_settings_views.xml',
             ],
+            'assets': {
+                'web.assets_backend': [
+                    'konfoo/static/src/17/js/*.js',
+                    'konfoo/static/src/css/*.css',
+                ],
+            },
         },
         '16.0': {
             'data': [
