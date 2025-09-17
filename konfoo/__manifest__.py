@@ -1,7 +1,7 @@
 # noinspection PyStatementEffect
 {
     'name': 'Konfoo',
-    'version': '1.12.4',
+    'version': '1.12.5',
     'author': 'Konfoo',
     'website': 'https://konfoo.com',
     'license': 'Other proprietary',
@@ -78,6 +78,12 @@
 
                 'views/res_config_settings_views.xml',
             ],
+            'assets': {
+                'web.assets_backend': [
+                    'konfoo/static/src/17/js/*.js',
+                    'konfoo/static/src/css/*.css',
+                ],
+            },
         },
         '16.0': {
             'data': [

@@ -52,6 +52,8 @@ If you do not need a parameter to be set then the value can be `None` or the key
 Changelog
 ---------
 
+- 1.12.5
+    - Mitigate RPC API change in 17.0
 - 1.12.4
     - Konfoo Widget: removed legacy record update logic from >=17.0
 - 1.12.3
