@@ -1,11 +1,13 @@
 from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError
-from odoo.osv.expression import expression
 from odoo.tools.safe_eval import safe_eval, datetime
 from odoo.release import version_info
 from odoo.tools import SQL
 import re
 import time
+
+if version_info[:2] < (18, 0):
+    from odoo.osv.expression import expression
 
 from .konfoo_sync import get_cron_time_limit
 
