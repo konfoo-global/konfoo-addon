@@ -2,13 +2,15 @@ from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError
 from odoo.osv.expression import expression
 from odoo.tools.safe_eval import safe_eval, datetime
+from odoo.release import version_info
+from odoo.tools import SQL
 import re
 import time
 
 from .konfoo_sync import get_cron_time_limit
 
 import logging
-logger = logging.getLogger(__name__)
+_logger = logging.getLogger(__name__)
 
 DATASET_NAME_VALIDATOR = re.compile(r'[^a-zA-Z0-9\-]')
 
@@ -26,9 +28,13 @@ def valid_dataset_name(name):
 class KonfooDataset(models.Model):
     _name = 'konfoo.dataset'
     _description = 'Konfoo Dataset'
-    _sql_constraints = [
-        ('uniq_name', 'unique(name)', "Dataset names must be unique"),
-    ]
+
+    if version_info[:2] < (18, 0):
+        _sql_constraints = [
+            ('uniq_name', 'unique(name)', "Dataset names must be unique"),
+        ]
+    else:
+        _uniq_name = models.Constraint('unique(name)', "Dataset names must be unique")
 
     company_id = fields.Many2one('res.company', 'Company', default=lambda self: self.env.company, required=True)
     name = fields.Char('Name', required=True)
@@ -36,8 +42,9 @@ class KonfooDataset(models.Model):
     model_id = fields.Selection(selection='_list_all_models', string='Model', required=True)
     domain = fields.Text(default='[]', required=True)
 
+    # TODO: refactor this to field_ids
     fields = fields.One2many(
-        'konfoo.dataset_field', 'dataset_id', string='Fields', copy=True, auto_join=True)
+        'konfoo.dataset_field', 'dataset_id', string='Fields', copy=True)
 
     @api.model
     def _list_all_models(self):
@@ -59,24 +66,24 @@ class KonfooDataset(models.Model):
     @api.constrains('model_id')
     def _check_model(self):
         for record in self:
-            logger.info('Model changed: %s', record.name)
+            _logger.info('Model changed: %s', record.name)
             record.fields.unlink()
             record.reset_dataset()
 
     def action_sync_now(self):
         limit_time = get_cron_time_limit()
         start = time.time()
-        logger.info('On demand Konfoo data synchronization start (limit=%ss)', limit_time)
+        _logger.info('On demand Konfoo data synchronization start (limit=%ss)', limit_time)
 
         def check_limit():
             if limit_time > 0 and time.time() - start > limit_time - 60:
-                logger.warning('Reached close to thread time limit (%ss), continuing next interval', limit_time)
+                _logger.warning('Reached close to thread time limit (%ss), continuing next interval', limit_time)
                 raise StopIteration()
 
         num_records = 0
         for record in self:
             num_records += record.sync_dataset(check_limit=check_limit)
-        logger.info('Synchronized %s records', num_records)
+        _logger.info('Synchronized %s records', num_records)
 
         self.env['konfoo.api'].reload_datasets()
 
@@ -89,7 +96,7 @@ class KonfooDataset(models.Model):
         for record in self:
             if len(record.fields) == 0:
                 continue
-            logger.info('Vital information changed - resetting dataset: %s', record.name)
+            _logger.info('Vital information changed - resetting dataset: %s', record.name)
             self.env['konfoo.dataset_object'].search([('dataset_id', '=', record.id)]).unlink()
             konfoo.dataset_reset(record.name, [field.csv_name for field in record.fields])
             konfoo.dataset_set_indices(record.name, record.get_indices())
@@ -104,7 +111,7 @@ class KonfooDataset(models.Model):
         if len(changes) == 0:
             return 0
 
-        logger.info('Dataset: %s (%s) - %s changed records', self.name, self.model_id, len(changes))
+        _logger.info('Dataset: %s (%s) - %s changed records', self.name, self.model_id, len(changes))
 
         konfoo_sync = self.env['konfoo.sync']
         max_batch_size = self.company_id.konfoo_sync_batch_size or 100
@@ -157,20 +164,42 @@ class KonfooDataset(models.Model):
     def detect_changes(self):
         self.ensure_one()
         domain = self.get_domain()
-        logger.info('Detecting changes on %s: %s', self.name, domain)
+        _logger.info('Detecting changes on %s: %s', self.name, domain)
 
+        if version_info[:2] < (18, 0):
+            return self._detect_changes_legacy(domain)
+        else:
+            return self._detect_changes(domain)
+
+    def _detect_changes(self, domain):
+        expr = self.env[self.model_id]._search(domain, bypass_access=True)
+        query = SQL(
+            """
+            select "%(model_table_name)s"."id" from %(from_clause)s
+            left join konfoo_dataset_object cache
+                on "%(model_table_name)s"."id" = cache.res_id and cache.dataset_id = %(dataset_id)s
+            where %(where_clause)s
+            and (cache.sync_date < "%(model_table_name)s"."write_date" or cache.sync_date is null)
+            """,
+            model_table_name=SQL(self.env[self.model_id]._table),
+            dataset_id=self.id,
+            from_clause=expr.from_clause or SQL(expr.table),
+            where_clause=expr.where_clause or SQL('TRUE')
+        )
+        rows = self.env.execute_query(query)
+        return list(map(lambda x: x[0], rows))
+
+    def _detect_changes_legacy(self, domain):
         expr = expression(domain, self.env[self.model_id])
         table, where, params = expr.query.get_sql()
         model_table_name = self.env[self.model_id]._table
-
         query = f"""
-        select "{model_table_name}"."id" from {table}
-        left join konfoo_dataset_object cache
-        on "{model_table_name}"."id" = cache.res_id and cache.dataset_id = {self.id}
-        where {where}
-        and (cache.sync_date < "{model_table_name}"."write_date" or cache.sync_date is null)
-        """
-
+                select "{model_table_name}"."id" from {table}
+                left join konfoo_dataset_object cache
+                on "{model_table_name}"."id" = cache.res_id and cache.dataset_id = {self.id}
+                where {where}
+                and (cache.sync_date < "{model_table_name}"."write_date" or cache.sync_date is null)
+                """
         self.env.cr.execute(query, params)
         return list(map(lambda x: x[0], self.env.cr.fetchall()))
 
@@ -199,11 +228,11 @@ class KonfooDataset(models.Model):
             columns.append(f'{res} as "{field.csv_name}"')
 
         (query, params) = expr.query.select(*columns)
-        logger.info('query: %s', query)
-        logger.info('params: %s', params)
+        _logger.info('query: %s', query)
+        _logger.info('params: %s', params)
         sql = f'SELECT to_json(r) FROM ({query}) r'
         self.env.cr.execute(sql, params)
         results = list(map(lambda x: x[0], self.env.cr.fetchall()))
-        logger.info(results)
+        _logger.info(results)
         return results
 

@@ -52,6 +52,9 @@ If you do not need a parameter to be set then the value can be `None` or the key
 Changelog
 ---------
 
+- 1.13.0
+    - Mitigate query builder API changes
+    - Mitigate constraint API changes
 - 1.12.5
     - Mitigate RPC API change in 17.0
 - 1.12.4
