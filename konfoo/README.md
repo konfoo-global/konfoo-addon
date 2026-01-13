@@ -52,6 +52,8 @@ If you do not need a parameter to be set then the value can be `None` or the key
 Changelog
 ---------
 
+- 1.13.2
+    - Mitigate `evalContext` active id location change in 18.0 and above
 - 1.13.1
     - Fix `osv.expression` deprecation warning in 18.0 and above
 - 1.13.0
