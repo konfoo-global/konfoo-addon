@@ -52,6 +52,8 @@ If you do not need a parameter to be set then the value can be `None` or the key
 Changelog
 ---------
 
+- 1.14.0
+    - Handle 19.0 and above view architecture peculiarities
 - 1.13.3
     - Fix unchecked `None` translation value in `KonfooTranslations.prefix`
 - 1.13.2
