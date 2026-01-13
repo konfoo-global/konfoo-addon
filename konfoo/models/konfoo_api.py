@@ -12,7 +12,7 @@ import ast
 import re
 
 import logging
-logger = logging.getLogger(__name__)
+_logger = logging.getLogger(__name__)
 
 
 LEGACY_MODEL_FIELD_MAP = {
@@ -101,7 +101,7 @@ class KonfooTranslations(object):
 
     def prefix(self, value):
         for lang, translation in self.map_translations.items():
-            self.map_translations[lang] = value + translation
+            self.map_translations[lang] = value + translation if translation else value
 
     def __str__(self):
         return self.map_translations[self.default_lang]
@@ -188,7 +188,7 @@ def fetch_konfoo_data(konfoo_url, session_key):
         raise UserError(_('Could not fetch session "{}" from Konfoo backend'.format(session_key)))
     session_data = response.json()
 
-    logger.info('Fetching BOM data')
+    _logger.info('Fetching BOM data')
     response = requests.get(urljoin(konfoo_url, '/api/v1/agg/bom/{}'.format(session_key)))
     if not response:
         raise UserError(_('Could not fetch BOM for session "{}" from Konfoo backend'.format(session_key)))
@@ -262,7 +262,7 @@ class KonfooAPI(models.AbstractModel):
         if 'id' not in session_data or not session_data['id']:
             raise UserError(_('Duplicated session has no ID'))
 
-        logger.info('Duplicated session %s as: %s', konfoo_session_key, session_data['id'])
+        _logger.info('Duplicated session %s as: %s', konfoo_session_key, session_data['id'])
         self.create_from_session(res_id, session_data['id'], parent_model, line_model)
 
     @api.model
@@ -273,11 +273,11 @@ class KonfooAPI(models.AbstractModel):
         record = self.env[parent_model].browse([res_id])
         if not record:
             raise UserError(_('Could not find "%s" with id: %s', parent_model, res_id))
-        logger.info('Konfoo updating parent record: %s', record)
+        _logger.info('Konfoo updating parent record: %s', record)
 
         # TODO: find konfoo products on this record and calculate "index" for product name prefix (e.g. S00001/1)
 
-        logger.info('Fetching configuration state: %s', session_key)
+        _logger.info('Fetching configuration state: %s', session_key)
         (session_data, bom_data) = fetch_konfoo_data(ctx.konfoo_url, session_key)
 
         return self.process_konfoo_session(ctx, session_key, session_data, bom_data, record, line_model)
@@ -316,20 +316,20 @@ class KonfooAPI(models.AbstractModel):
 
         update_if_exists = meta.get('update_if_exists', False)
         if update_if_exists and not isinstance(update_if_exists, str):
-            logger.warning('Metadata field "update_if_exists" - value should be a field name, found "%s"', update_if_exists)
+            _logger.warning('Metadata field "update_if_exists" - value should be a field name, found "%s"', update_if_exists)
             update_if_exists = False
 
         if update_if_exists and update_if_exists not in self.env['product.product']._fields:
-            logger.warning('Metadata field "update_if_exists" - field "%s" does not exist', update_if_exists)
+            _logger.warning('Metadata field "update_if_exists" - field "%s" does not exist', update_if_exists)
             update_if_exists = False
 
         use_if_exists = meta.get('use_if_exists', False)
         if use_if_exists and not isinstance(use_if_exists, str):
-            logger.warning('Metadata field "use_if_exists" - value should be a field name, found "%s"', use_if_exists)
+            _logger.warning('Metadata field "use_if_exists" - value should be a field name, found "%s"', use_if_exists)
             use_if_exists = False
 
         if use_if_exists and use_if_exists not in self.env['product.product']._fields:
-            logger.warning('Metadata field "use_if_exists" - field "%s" does not exist', use_if_exists)
+            _logger.warning('Metadata field "use_if_exists" - field "%s" does not exist', use_if_exists)
             use_if_exists = False
 
         additional_data = meta.copy()
@@ -357,7 +357,7 @@ class KonfooAPI(models.AbstractModel):
         for field in list(additional_data.keys()):
             if field.count('.') > 1:
                 del additional_data[field]
-                logger.warning('Ignoring metadata field "%s" - using unknown concepts', field)
+                _logger.warning('Ignoring metadata field "%s" - using unknown concepts', field)
                 continue
 
             # Handles <ref>.<field> type metadata
@@ -368,39 +368,39 @@ class KonfooAPI(models.AbstractModel):
 
                 if object_name == 'parent':
                     if field_name not in parent._fields:
-                        logger.warning('Ignoring metadata field "%s" - field does not exist in %s', field, parent)
+                        _logger.warning('Ignoring metadata field "%s" - field does not exist in %s', field, parent)
                         continue
                     parent.write({field_name: value})
                 elif object_name == 'line':
                     if field_name not in line_model._fields:
-                        logger.warning('Ignoring metadata field "%s" - field does not exist in %s', field, line_model)
+                        _logger.warning('Ignoring metadata field "%s" - field does not exist in %s', field, line_model)
                         continue
                     if line is None:
-                        logger.warning('Ignoring metadata field "%s" - `line` values not present', field)
+                        _logger.warning('Ignoring metadata field "%s" - `line` values not present', field)
                         continue
                     if line_model is None:
-                        logger.warning('Ignoring metadata field "%s" - `line` data model not present', field)
+                        _logger.warning('Ignoring metadata field "%s" - `line` data model not present', field)
                         continue
                     line.update({field_name: value})
                 else:
-                    logger.warning('Ignoring metadata field "%s" - using unknown object', field)
+                    _logger.warning('Ignoring metadata field "%s" - using unknown object', field)
                 continue
 
             # Handles plain keys (currently constrained to product.product)
             model_field = self.env['product.product']._fields.get(field)
             if not model_field:
                 del additional_data[field]
-                logger.warning('Ignoring metadata field "%s" - field does not exist in product.product', field)
+                _logger.warning('Ignoring metadata field "%s" - field does not exist in product.product', field)
                 continue
             if model_field and model_field.translate:
                 translated_data[model_field.name] = KonfooTranslations(self.env, additional_data[model_field.name])
                 del additional_data[model_field.name]
 
         if update_if_exists and update_if_exists not in additional_data:
-            logger.warning('Metadata field "update_if_exists" - field "%s" does not have value in metadata', update_if_exists)
+            _logger.warning('Metadata field "update_if_exists" - field "%s" does not have value in metadata', update_if_exists)
             update_if_exists = False
         if use_if_exists and use_if_exists not in additional_data:
-            logger.warning('Metadata field "use_if_exists" - field "%s" does not have value in metadata', use_if_exists)
+            _logger.warning('Metadata field "use_if_exists" - field "%s" does not have value in metadata', use_if_exists)
             use_if_exists = False
 
         options = dict(
@@ -414,7 +414,7 @@ class KonfooAPI(models.AbstractModel):
 
     @api.model
     def process_konfoo_session(self, ctx, session_key, session_data, bom_data, parent, line_model):
-        logger.info('Creating/updating Konfoo session data: %s', session_key)
+        _logger.info('Creating/updating Konfoo session data: %s', session_key)
         session_object = self._create_or_update_konfoo_session(session_key, session_data, bom_data)
 
         line_vals = {}
@@ -430,7 +430,7 @@ class KonfooAPI(models.AbstractModel):
         if version_info[:2] < (16, 0) and 'name' not in line_vals:
             line_vals['name'] = product_name
 
-        logger.info('Metadata processed - template=%s', template_product)
+        _logger.info('Metadata processed - template=%s', template_product)
 
         (product, created, ignore_rules) = self._konfoo_product(
             ctx, session_object.id, template_product, product_name,
@@ -438,11 +438,11 @@ class KonfooAPI(models.AbstractModel):
             translated_data=translated_data,
             options=options)
 
-        logger.info('Using product: %s (id=%s)', product.name, product.id)
+        _logger.info('Using product: %s (id=%s)', product.name, product.id)
         if not ignore_rules:
             bom, created_objects = self.process_aggregated_data(product.product_tmpl_id.id, bom_data, parent=parent)
-            logger.info('Created BOM: %s', bom.id)
-            logger.info('Updating cost')
+            _logger.info('Created BOM: %s', bom.id)
+            _logger.info('Updating cost')
             product.button_bom_cost()
 
         if created:
@@ -461,15 +461,15 @@ class KonfooAPI(models.AbstractModel):
             if line_model_options.get('parent_id'):
                 line_vals[line_model_options.get('parent_id')] = parent.id
 
-            logger.info('Creating %s: %s', line_model, line_vals)
+            _logger.info('Creating %s: %s', line_model, line_vals)
             line = self.env[line_model].create(line_vals)
-            logger.info('Created: %s', line)
+            _logger.info('Created: %s', line)
         else:
             line_lookup_domain = self.get_line_lookup_domain(line_model, session_object.id)
             lines = self.env[line_model].search(line_lookup_domain)
-            logger.info('Updating %s: %s', lines, line_vals)
+            _logger.info('Updating %s: %s', lines, line_vals)
             lines.write(line_vals)
-            logger.info('Updated: %s', lines)
+            _logger.info('Updated: %s', lines)
 
     @api.model
     def process_aggregated_data(self, product_tmpl_id, agg_data, parent=None):
@@ -489,22 +489,22 @@ class KonfooAPI(models.AbstractModel):
 
         for line in agg_data['data']:
             if '__id__' not in line:
-                logger.warning('Received BOM line with no defined __id__: %s', line)
+                _logger.warning('Received BOM line with no defined __id__: %s', line)
                 continue
 
             if 'model' not in line:
-                logger.warning('Received BOM line with no defined model: %s', line)
+                _logger.warning('Received BOM line with no defined model: %s', line)
                 continue
 
             line_model = line['model']
             if line_model not in allowed_models:
-                logger.warning('Received BOM line with disallowed model: %s', line_model)
+                _logger.warning('Received BOM line with disallowed model: %s', line_model)
                 continue
 
             if parent:
                 map_cache_objects[make_cache_key('parent', line.get('__instance__', 'anon'))] = parent
 
-            logger.info(
+            _logger.info(
                 'Executing rule: %s (model=%s, instance=%s)',
                 line.get('__id__'), line_model, line.get('__instance__', 'anon'))
 
@@ -538,11 +538,11 @@ class KonfooAPI(models.AbstractModel):
 
             return res
         except Exception as err:
-            logger.error(
+            _logger.error(
                 'Failed to execute rule: %s (model=%s, instance=%s)',
                 line.get('__id__'), line.get('model'), line.get('__instance__', 'anon'))
-            logger.error('Error: %s', err)
-            logger.info('Caused by values/kwargs: %s', values)
+            _logger.error('Error: %s', err)
+            _logger.info('Caused by values/kwargs: %s', values)
             raise UserError(_(
                 'Invalid input from rule "%s":\n%s',
                 line.get('__id__', _('Unknown')),
@@ -618,7 +618,7 @@ class KonfooAPI(models.AbstractModel):
                     continue
                 record = self.env[model].search([(field, '=', value)], limit=1)
                 if not record:
-                    logger.warning('Failed record lookup: %s = %s', field, value)
+                    _logger.warning('Failed record lookup: %s = %s', field, value)
 
                 create[target_field] = record.id if record else None
                 continue
@@ -754,9 +754,9 @@ class KonfooAPI(models.AbstractModel):
         try:
             response = requests.get(url, headers=headers)
             if response:
-                logger.info('Konfoo datasets reload: %s', response.text)
+                _logger.info('Konfoo datasets reload: %s', response.text)
             else:
-                logger.warning('Konfoo datasets reload failed: %s', response)
+                _logger.warning('Konfoo datasets reload failed: %s', response)
             return bool(response)
         except RequestException as err:
             raise UserError(_('Could not reload remote datasets: %s', str(err)))
@@ -788,14 +788,14 @@ class KonfooAPI(models.AbstractModel):
                 create_line = True
                 # the old session gets discarded in this case
                 product.write(dict(konfoo_session_id=session_object_id))
-                logger.info('Found existing product: %s (id=%s)', product.name, product.id)
+                _logger.info('Found existing product: %s (id=%s)', product.name, product.id)
 
         if product:
             if options.get('use_if_exists'):
-                logger.info('Reusing product: %s (id=%s) - nothing was changed', product.name, product.id)
+                _logger.info('Reusing product: %s (id=%s) - nothing was changed', product.name, product.id)
                 ignore_rules = True
             else:
-                logger.info('Reconfiguring product: %s (id=%s)', product.name, product.id)
+                _logger.info('Reconfiguring product: %s (id=%s)', product.name, product.id)
                 vals = dict(name=product_name)
                 if additional_data is not None:
                     vals.update(additional_data)
@@ -809,7 +809,7 @@ class KonfooAPI(models.AbstractModel):
                     boms = self.env['mrp.bom'].search([
                         ('product_tmpl_id', '=', product.product_tmpl_id.id), ('active', '=', True)])
                     for existing_bom in boms:
-                        logger.info(
+                        _logger.info(
                             f'Archiving copy of existing BOM: {existing_bom} '
                             f'("{product.name or product}", id={product.id})')
                         _archived = existing_bom.copy({
