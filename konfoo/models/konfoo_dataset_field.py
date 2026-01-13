@@ -1,5 +1,6 @@
 from odoo import models, fields, api, _
 from odoo.exceptions import ValidationError
+from odoo.release import version_info
 from .dynamic_selection import DynamicSelection
 import re
 
@@ -12,9 +13,13 @@ CSV_COLUMN_NAME_VALIDATOR = re.compile(r'[^\w\d\-_\. ]')  # noqa
 class KonfooDatasetField(models.Model):
     _name = 'konfoo.dataset_field'
     _description = 'Dataset Field'
-    _sql_constraints = [
-        ('uniq', 'unique(dataset_id, name)', "Dataset fields must be unique"),
-    ]
+
+    if version_info[:2] < (18, 0):
+        _sql_constraints = [
+            ('uniq', 'unique(dataset_id, name)', "Dataset fields must be unique"),
+        ]
+    else:
+        _uniq = models.Constraint('unique(dataset_id, name)', "Dataset fields must be unique")
 
     dataset_id = fields.Many2one('konfoo.dataset', 'Dataset', required=True)
     name = DynamicSelection(string='Name', required=True, selection_dynamic='list_model_fields')

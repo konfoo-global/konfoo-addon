@@ -1,4 +1,5 @@
 from odoo import models, fields, api
+from odoo.release import version_info
 
 import logging
 logger = logging.getLogger(__name__)
@@ -8,9 +9,13 @@ class KonfooAllowedModel(models.Model):
     _name = 'konfoo.allowed.model'
     _description = 'Konfoo allowed models'
     _rec_name = 'model'
-    _sql_constraints = [
-        ('model_uniq', 'unique(model)', "Model entry already exists"),
-    ]
+
+    if version_info[:2] < (18, 0):
+        _sql_constraints = [
+            ('model_uniq', 'unique(model)', "Model entry already exists"),
+        ]
+    else:
+        _model_uniq = models.Constraint('unique(model)', "Model entry already exists")
 
     company_id = fields.Many2one('res.company', 'Company', default=lambda self: self.env.company, required=True)
     model = fields.Selection(selection='_list_all_models', string='Model', required=True)
