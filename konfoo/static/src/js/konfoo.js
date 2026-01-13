@@ -226,6 +226,11 @@ export class KonfooComponent extends owl.Component {
         if (this.props.record.evalContext && this.props.record.evalContext.active_id) {
             return this.props.record.evalContext.active_id;
         }
+
+        // Odoo >= 18.0
+        if (this.props.record.evalContext && this.props.record.evalContext.id) {
+            return this.props.record.evalContext.id;
+        }
     }
 }
 
