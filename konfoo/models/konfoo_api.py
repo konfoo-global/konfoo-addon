@@ -101,7 +101,7 @@ class KonfooTranslations(object):
 
     def prefix(self, value):
         for lang, translation in self.map_translations.items():
-            self.map_translations[lang] = value + translation
+            self.map_translations[lang] = value + translation if translation else value
 
     def __str__(self):
         return self.map_translations[self.default_lang]
