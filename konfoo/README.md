@@ -52,6 +52,8 @@ If you do not need a parameter to be set then the value can be `None` or the key
 Changelog
 ---------
 
+- 1.15.0
+    - Add a more direct mechanism for supporting `product.supplierinfo` in templates
 - 1.14.0
     - Handle 19.0 and above view architecture peculiarities
 - 1.13.3
