@@ -522,7 +522,6 @@ class KonfooAPI(models.AbstractModel):
         model, values, object, method = self.process_agg_line_struct(line, additional_data, map_cache_objects)
         # noinspection PyBroadException
         try:
-            res = None
             if method == 'create':
                 res = self.create_object(model, values, object)
             elif method == 'read':
@@ -631,7 +630,14 @@ class KonfooAPI(models.AbstractModel):
     @api.model
     def create_object(self, model, create, template_object=None):
         if template_object:
-            return template_object.with_context({'lang': 'en_US'}).copy(create)
+            if template_object._name == 'product.product':
+                tmpl_copy = template_object.product_tmpl_id.with_context({'lang': 'en_US'}).copy(create)
+                sellers = template_object.product_tmpl_id.seller_ids.copy()
+                tmpl_copy.write({'seller_ids': sellers.ids})
+                copy = tmpl_copy.product_variant_id
+            else:
+                copy = template_object.with_context({'lang': 'en_US'}).copy(create)
+            return copy
         return model.create(create)
 
     @api.model
