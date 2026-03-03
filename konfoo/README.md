@@ -52,7 +52,7 @@ If you do not need a parameter to be set then the value can be `None` or the key
 Changelog
 ---------
 
-- 1.15.1
+- 1.15.2
     - Fix: SQL constraint API change to only affect >=19.0
 - 1.15.0
     - Add a more direct mechanism for supporting `product.supplierinfo` in templates

@@ -10,7 +10,7 @@ class KonfooAllowedModel(models.Model):
     _description = 'Konfoo allowed models'
     _rec_name = 'model'
 
-    if version_info[:2] < (18, 0):
+    if version_info[:2] < (19, 0):
         _sql_constraints = [
             ('model_uniq', 'unique(model)', "Model entry already exists"),
         ]
