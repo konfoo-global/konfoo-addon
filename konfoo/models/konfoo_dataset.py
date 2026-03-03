@@ -31,7 +31,7 @@ class KonfooDataset(models.Model):
     _name = 'konfoo.dataset'
     _description = 'Konfoo Dataset'
 
-    if version_info[:2] < (18, 0):
+    if version_info[:2] < (19, 0):
         _sql_constraints = [
             ('uniq_name', 'unique(name)', "Dataset names must be unique"),
         ]
