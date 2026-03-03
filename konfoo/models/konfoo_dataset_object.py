@@ -9,7 +9,7 @@ class KonfooDatasetObject(models.Model):
     _name = 'konfoo.dataset_object'
     _description = 'Dataset Object'
 
-    if version_info[:2] < (18, 0):
+    if version_info[:2] < (19, 0):
         _sql_constraints = [
             ('cache_index', 'unique(dataset_id, res_id)', "Cache entry must have unique references"),
         ]
