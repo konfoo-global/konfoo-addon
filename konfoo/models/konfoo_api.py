@@ -542,6 +542,7 @@ class KonfooAPI(models.AbstractModel):
                 line.get('__id__'), line.get('model'), line.get('__instance__', 'anon'))
             _logger.error('Error: %s', err)
             _logger.info('Caused by values/kwargs: %s', values)
+            _logger.exception(err)
             raise UserError(_(
                 'Invalid input from rule "%s":\n%s',
                 line.get('__id__', _('Unknown')),
@@ -632,8 +633,9 @@ class KonfooAPI(models.AbstractModel):
         if template_object:
             if template_object._name == 'product.product':
                 tmpl_copy = template_object.product_tmpl_id.with_context({'lang': 'en_US'}).copy(create)
-                sellers = template_object.product_tmpl_id.seller_ids.copy()
-                tmpl_copy.write({'seller_ids': sellers.ids})
+                if template_object.product_tmpl_id.seller_ids:
+                    sellers = template_object.product_tmpl_id.seller_ids.copy()
+                    tmpl_copy.write({'seller_ids': sellers.ids})
                 copy = tmpl_copy.product_variant_id
             else:
                 copy = template_object.with_context({'lang': 'en_US'}).copy(create)

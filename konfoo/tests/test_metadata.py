@@ -5,6 +5,8 @@ import json
 import logging
 logger = logging.getLogger(__name__)
 
+UOM_FIELD = 'product_uom_id' if version_info[:2] <= (19, 0) else 'uom_id'
+
 
 @tagged('-at_install', 'post_install')
 class TestKonfooMetadata(TransactionCase):
@@ -55,7 +57,7 @@ class TestKonfooMetadata(TransactionCase):
                         "model": "mrp.bom.line",
                         "product_id := product.product.default_code": "MOCK-PRODUCT",
                         "product_qty": 2,
-                        "product_uom_id := uom.uom.name": "Units"
+                        "%s := uom.uom.name": "Units"
                     }
                 ],
                 "meta": {
@@ -68,7 +70,7 @@ class TestKonfooMetadata(TransactionCase):
                 },
                 "name": "Test Aggregator"
             }
-        """)
+        """ % (UOM_FIELD,))
 
         mock_partner = self.env['res.partner'].create({
             'name': 'Mock Partner',
