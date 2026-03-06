@@ -52,6 +52,12 @@ If you do not need a parameter to be set then the value can be `None` or the key
 Changelog
 ---------
 
+- 1.15.3
+    - Fix warning for legacy `self._cr` usage
+    - Add "human-readable" names to model selections
+    - Fix deprecation warning about `toggle_active`
+    - Fix regression in 16.0, 17.0 that caused an exception when executing `copy()` on an empty Supplier Info recordset
+    - Porting: `mrp.bom.line->product_uom_id` has changed to `uom_id` in 20.0
 - 1.15.2
     - Fix: SQL constraint API change to only affect >=19.0
 - 1.15.0
