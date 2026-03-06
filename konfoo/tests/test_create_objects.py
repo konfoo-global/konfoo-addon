@@ -5,6 +5,8 @@ import json
 import logging
 logger = logging.getLogger(__name__)
 
+UOM_FIELD = 'product_uom_id' if version_info[:2] <= (19, 0) else 'uom_id'
+
 
 @tagged('-at_install', 'post_install')
 class TestKonfooCreateObjects(TransactionCase):
@@ -68,14 +70,14 @@ class TestKonfooCreateObjects(TransactionCase):
               "model": "mrp.bom.line",
               "product_id := product.product.default_code": "PROD1234",
               "product_qty": 1,
-              "product_uom_id := uom.uom.name": "Units"
+              "%s := uom.uom.name": "Units"
             }
-        """)
+        """ % (UOM_FIELD,))
 
         model, create, template_object, method = konfoo.process_agg_line_struct(data, additional_data=dict(bom_id=bom.id))
         self.assertEqual(model, self.env['mrp.bom.line'])
         self.assertEqual(template_object, None)
-        self.assertSetEqual(set(create.keys()), {'bom_id', 'product_id', 'product_qty', 'product_uom_id'})
+        self.assertSetEqual(set(create.keys()), {'bom_id', 'product_id', 'product_qty', UOM_FIELD})
         self.assertEqual(create['product_qty'], 1)
 
         bom_line = konfoo.create_object(model, create, template_object)
@@ -156,9 +158,9 @@ class TestKonfooCreateObjects(TransactionCase):
               "model": "mrp.bom.line",
               "product_id := id": "purchase_product",
               "product_qty": 2,
-              "product_uom_id := uom.uom.name": "Units"
+              "%s := uom.uom.name": "Units"
             }]
-        """)
+        """ % (UOM_FIELD,))
 
         bom, created_objects = konfoo.process_aggregated_data(template_main.product_tmpl_id.id, dict(data=data), parent=None)
         self.assertTrue(bool(bom))
@@ -220,11 +222,11 @@ class TestKonfooCreateObjects(TransactionCase):
                         "model": "mrp.bom.line",
                         "product_id := product.product.default_code": "COMPONENT-1",
                         "product_qty": 1,
-                        "product_uom_id := uom.uom.name": "Units"
+                        "%s := uom.uom.name": "Units"
                     }
                 ]
             }
-        """)
+        """ % (UOM_FIELD,))
 
         konfoo.process_konfoo_session(ctx, '01SSSSSSSSSSSSSSSSSSSSSSS0', dict(), data, sale_order, 'sale.order.line')
 
@@ -314,11 +316,11 @@ class TestKonfooCreateObjects(TransactionCase):
                         "model": "mrp.bom.line",
                         "product_id := product.product.default_code": "COMPONENT-1",
                         "product_qty": 1,
-                        "product_uom_id := uom.uom.name": "Units"
+                        "%s := uom.uom.name": "Units"
                     }
                 ]
             }
-        """)
+        """ % (UOM_FIELD,))
 
         konfoo.process_konfoo_session(ctx, '01SSSSSSSSSSSSSSSSSSSSSSS0', dict(), data, sale_order, 'sale.order.line')
 
