@@ -22,7 +22,9 @@ class KonfooAllowedModel(models.Model):
 
     @api.model
     def _list_all_models(self):
-        # TODO: handle translatable model name properly
-        self._cr.execute("SELECT model, model FROM ir_model ORDER BY model")
-        options = self._cr.fetchall()
-        return options
+        lang = self.env.lang or 'en_US'
+        self.env.cr.execute(
+            "SELECT model, model || ' (' || COALESCE(name->>%s, name->>'en_US') || ')' FROM ir_model ORDER BY 1",
+            [lang],
+        )
+        return self.env.cr.fetchall()

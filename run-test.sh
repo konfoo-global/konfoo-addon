@@ -2,6 +2,7 @@
 set -e
 
 REPO_ROOT=$(cd "$(dirname "$0")"; pwd)
+PG_VERSION="16"
 RED='\e[31m'
 GREEN='\e[32m'
 NC='\e[0m'
@@ -85,6 +86,7 @@ fi
 
 declare -A odoo_images
 odoo_images[edge]="ghcr.io/avalahee/edge-ee:latest"
+odoo_images[19.0]="ghcr.io/avalahee/v19ee:latest"
 odoo_images[18.0]="ghcr.io/avalahee/v18ee:latest"
 odoo_images[17.0]="ghcr.io/avalahee/v17ee:latest"
 odoo_images[16.0]="ghcr.io/avalahee/v16ee:latest"
@@ -101,7 +103,7 @@ echo -e "[+] Running: ${BOLD}${GREEN}$ODOO_IMAGE${NC}"
 if [ "$OPT_NO_PULL" = false ] ; then
     echo -e "[+] Pulling images"
     set -x
-    docker pull postgres:latest
+    docker pull "postgres:$PG_VERSION"
     docker pull "$ODOO_IMAGE"
     { set +x; } 2>/dev/null
     echo
@@ -119,7 +121,7 @@ echo -e "[+] Output: ${GREEN}$RUN_FOLDER_NAME${NC}"
 volumes=""
 
 # mount all modules in this repo
-for path in $(find . -type f -name '__manifest__.py' -not -path '*/.*' -exec dirname "$1" {} + | sort | uniq)
+for path in $(find -L . -type f -name '__manifest__.py' -not -path '*/.*' -exec dirname "$1" {} + | sort | uniq)
 do
     if [ "$path" = "." ]; then
         continue
@@ -136,7 +138,7 @@ determine_log_state () {
     if grep -q 'WARNING' "$1"; then
         result="WARNING"
     fi
-    if grep -q 'ERROR\|CRITICAL' "$1"; then
+    if grep -q -P '^(?!.*\(ERROR/\d+\)).*(ERROR|CRITICAL)' "$1"; then
         result="ERROR"
     fi
     if grep -q 'FAIL' "$1"; then
@@ -158,19 +160,19 @@ CONTAINER_PG_NAME=$(echo "ci-odoo-pg_$TARGET_BRANCH" | sed 's/\.0//')
 CONTAINER_PG=$(docker run -d --rm --name "$CONTAINER_PG_NAME" \
     -e POSTGRES_PASSWORD=odoo \
     -e POSTGRES_USER=odoo \
-    --tmpfs /var/lib/postgresql/data \
-    "postgres:latest")
-DB_HOST=$(docker inspect -f '{{ .NetworkSettings.IPAddress }}' "$CONTAINER_PG")
+    --tmpfs /var/lib/postgresql \
+    "postgres:$PG_VERSION")
+DB_HOST=$(docker inspect -f '{{ .NetworkSettings.Networks.bridge.IPAddress }}' "$CONTAINER_PG")
 echo -e "${DARK_GRAY} -> postgres running as: $CONTAINER_PG ($DB_HOST)${NC}"
 
 echo -e "${DARK_GRAY} -> running install: ${GREEN}$TEST_MODULE${NC}"
-# shellcheck disable=SC2086
 CONTAINER_NAME=$(echo "ci-odoo_$TARGET_BRANCH" | sed 's/\.0//')
+# shellcheck disable=SC2086
 docker run --rm -it --name "$CONTAINER_NAME" \
     -e HOST="$DB_HOST" \
     $volumes \
-    --tmpfs /var/lib/odoo/filestore \
-    $ODOO_IMAGE \
+    --tmpfs /var/lib/odoo/filestore:uid=101,gid=106 \
+    "$ODOO_IMAGE" \
     -d dev \
     -i "$TEST_MODULE" --stop-after-init | tee "$LOG_OUTPUT_INSTALL" > "$LOG_TERMINAL_OUTPUT"
 
@@ -190,8 +192,8 @@ if [ "$INSTALL_STATE" = "OK" ] || [ "$INSTALL_STATE" = "WARNING" ]; then
         docker run --rm -it --name "$CONTAINER_NAME" \
             -e HOST="$DB_HOST" \
             $volumes \
-            --tmpfs /var/lib/odoo/filestore \
-            $ODOO_IMAGE \
+            --tmpfs /var/lib/odoo/filestore:uid=101,gid=106 \
+            "$ODOO_IMAGE" \
             -d dev \
             --test-tags ".$TEST_METHOD" --stop-after-init \
             --log-handler odoo.addons."$TEST_MODULE:$LOG_LEVEL" | tee "$LOG_OUTPUT_TESTS" > "$LOG_TERMINAL_OUTPUT"
@@ -201,8 +203,8 @@ if [ "$INSTALL_STATE" = "OK" ] || [ "$INSTALL_STATE" = "WARNING" ]; then
         docker run --rm -it --name "$CONTAINER_NAME" \
             -e HOST="$DB_HOST" \
             $volumes \
-            --tmpfs /var/lib/odoo/filestore \
-            $ODOO_IMAGE \
+            --tmpfs /var/lib/odoo/filestore:uid=101,gid=106 \
+            "$ODOO_IMAGE" \
             -d dev \
             --test-tags "/$TEST_MODULE" --stop-after-init \
             --log-handler odoo.addons."$TEST_MODULE:$LOG_LEVEL" | tee "$LOG_OUTPUT_TESTS" > "$LOG_TERMINAL_OUTPUT"

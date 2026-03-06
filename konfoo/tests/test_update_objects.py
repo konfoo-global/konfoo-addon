@@ -5,6 +5,7 @@ import json
 import logging
 logger = logging.getLogger(__name__)
 
+UOM_FIELD = 'product_uom_id' if version_info[:2] <= (19, 0) else 'uom_id'
 
 @tagged('-at_install', 'post_install')
 class TestKonfooUpdateObjects(TransactionCase):
@@ -45,7 +46,7 @@ class TestKonfooUpdateObjects(TransactionCase):
                     "__instance__": "01J7ZJX51S506Y8P514P1Y2CNJ",
                     "model": "mrp.bom.line",
                     "product_id := product.product.default_code": "BOM-PRODUCT-COPY",
-                    "product_uom_id := uom.uom.name": "Units",
+                    "%s := uom.uom.name": "Units",
                     "product_qty": 1
                 },
                 {
@@ -60,12 +61,12 @@ class TestKonfooUpdateObjects(TransactionCase):
                     "__id__": "product_archive",
                     "__instance__": "01J7ZJX51S506Y8P514P1Y2CNJ",
                     "command": "rpc",
-                    "method": "toggle_active",
+                    "method": "action_archive",
                     "model": "product.product",
                     "records": "(search) [('default_code', '=', 'BOM-PRODUCT-COPY'), ('id', '=', product_copy)] {'limit': 1}"
                 }
             ]
-        """)
+        """ % (UOM_FIELD,))
 
         bom, processed_objects = konfoo.process_aggregated_data(template_main.product_tmpl_id.id, dict(data=data), parent=None)
         self.assertEqual(len(processed_objects), 4)
