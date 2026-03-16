@@ -52,6 +52,8 @@ If you do not need a parameter to be set then the value can be `None` or the key
 Changelog
 ---------
 
+- 1.15.4
+    - Add `group_konfoo_user` to konfoo_menus.xml, so only `group_konfoo_user` can see konfoo menu
 - 1.15.3
     - Fix warning for legacy `self._cr` usage
     - Add "human-readable" names to model selections
