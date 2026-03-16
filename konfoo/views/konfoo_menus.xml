@@ -9,7 +9,8 @@
 
     <menuitem id="konfoo_menu_root"
         name="Konfoo"
-        web_icon="konfoo,static/description/icon-raised.png" />
+        web_icon="konfoo,static/description/icon-raised.png"
+        groups="konfoo.group_konfoo_user" />
 
     <menuitem id="konfoo_datasets_menu"
         name="Datasets"
