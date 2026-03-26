@@ -219,7 +219,14 @@ class KonfooDataset(models.Model):
         self.ensure_one()
         data = dict()
         for (field, csv_name) in self.get_serialize_fields():
-            data[csv_name] = record[field]
+            field_obj = record._fields.get(field)
+            field_type = field_obj.type if field_obj else None
+            if field_type == 'many2one':
+                data[csv_name] = record[field].id
+            elif field_type == 'one2many':
+                data[csv_name] = record[field].ids
+            else:
+                data[csv_name] = record[field]
         return data
 
     def get_serialized_fast(self, ids):
