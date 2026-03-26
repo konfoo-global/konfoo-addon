@@ -52,6 +52,9 @@ If you do not need a parameter to be set then the value can be `None` or the key
 Changelog
 ---------
 
+- 1.15.5
+    - Add `konfoo_suppress_errors` context key to suppress errors in konfoo API calls
+    - Fix side effects in `@api.constrains` used to trigger dataset reset
 - 1.15.4
     - Add `group_konfoo_user` to konfoo_menus.xml, so only `group_konfoo_user` can see konfoo menu
 - 1.15.3
