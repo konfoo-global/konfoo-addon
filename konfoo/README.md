@@ -52,6 +52,8 @@ If you do not need a parameter to be set then the value can be `None` or the key
 Changelog
 ---------
 
+- 1.16.0
+    - Support for `Many2one` and `One2many` IDs in dataset fields
 - 1.15.5
     - Add `konfoo_suppress_errors` context key to suppress errors in konfoo API calls
     - Fix side effects in `@api.constrains` used to trigger dataset reset
