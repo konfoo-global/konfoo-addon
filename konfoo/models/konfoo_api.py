@@ -723,11 +723,17 @@ class KonfooAPI(models.AbstractModel):
         return self.env['uom.uom'].search([(field, '=', value)], limit=1)
 
     @api.model
-    def dataset_reset(self, name, fields):
-        url = urljoin(self._get_sponge_url(), name)
-        headers = {'x-api-key': self._get_sponge_key()}
-        data = dict(fields=['id'] + fields)
+    def dataset_reset(self, name, field_names):
         try:
+            url = urljoin(self._get_sponge_url(), name)
+            headers = {'x-api-key': self._get_sponge_key()}
+        except UserError as err:
+            _logger.info(f'WTF: {self.env.context.get("konfoo_suppress_errors", False)=}')
+            if self.env.context.get('konfoo_suppress_errors', False):
+                return
+            raise err
+        try:
+            data = dict(fields=['id'] + field_names)
             response = requests.put(url, headers=headers, json=data)
             if not response:
                 raise UserError(_('Could not reset dataset: %s', name))
@@ -736,8 +742,13 @@ class KonfooAPI(models.AbstractModel):
 
     @api.model
     def dataset_set_indices(self, name, indices):
-        url = urljoin(self._get_sponge_url(), f'{name}/index')
-        headers = {'x-api-key': self._get_sponge_key()}
+        try:
+            url = urljoin(self._get_sponge_url(), f'{name}/index')
+            headers = {'x-api-key': self._get_sponge_key()}
+        except UserError as err:
+            if self.env.context.get('konfoo_suppress_errors', False):
+                return
+            raise err
         try:
             response = requests.put(url, headers=headers, json=indices)
             if not response:
@@ -747,8 +758,13 @@ class KonfooAPI(models.AbstractModel):
 
     @api.model
     def dataset_patch_data(self, name, data):
-        url = urljoin(self._get_sponge_url(), name)
-        headers = {'x-api-key': self._get_sponge_key()}
+        try:
+            url = urljoin(self._get_sponge_url(), name)
+            headers = {'x-api-key': self._get_sponge_key()}
+        except UserError as err:
+            if self.env.context.get('konfoo_suppress_errors', False):
+                return False
+            raise err
         try:
             response = requests.patch(url, headers=headers, json=data)
             return bool(response)
@@ -757,8 +773,13 @@ class KonfooAPI(models.AbstractModel):
 
     @api.model
     def reload_datasets(self):
-        url = urljoin(self._get_konfoo_url(), '/api/v1/admin/datasets-reload')
-        headers = {'x-api-key': self._get_sponge_key()}
+        try:
+            url = urljoin(self._get_konfoo_url(), '/api/v1/admin/datasets-reload')
+            headers = {'x-api-key': self._get_sponge_key()}
+        except UserError as err:
+            if self.env.context.get('konfoo_suppress_errors', False):
+                return False
+            raise err
         try:
             response = requests.get(url, headers=headers)
             if response:
