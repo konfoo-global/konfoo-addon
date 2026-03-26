@@ -67,12 +67,17 @@ class KonfooDataset(models.Model):
         for record in self:
             valid_dataset_name(record.name)
 
-    @api.constrains('model_id')
-    def _check_model(self):
-        for record in self:
-            _logger.info('Model changed: %s', record.name)
-            record.fields.unlink()
-            record.reset_dataset()
+    @api.model
+    def create(self, vals_list):
+        records = super().create(vals_list)
+        records.reset_dataset(suppress_errors=True)
+        return records
+
+    def write(self, vals):
+        res = super().write(vals)
+        if {'name', 'model_id', 'fields'} & set(vals):
+            self.reset_dataset(suppress_errors=True)
+        return res
 
     def action_sync_now(self):
         limit_time = get_cron_time_limit()
@@ -94,11 +99,10 @@ class KonfooDataset(models.Model):
     def action_reset_dataset(self):
         self.reset_dataset()
 
-    @api.constrains('name', 'fields')
-    def reset_dataset(self):
-        konfoo = self.env['konfoo.api']
+    def reset_dataset(self, suppress_errors=False):
+        konfoo = self.env['konfoo.api'].with_context(konfoo_suppress_errors=suppress_errors)
         for record in self:
-            if len(record.fields) == 0:
+            if not record.fields:
                 continue
             _logger.info('Vital information changed - resetting dataset: %s', record.name)
             self.env['konfoo.dataset_object'].search([('dataset_id', '=', record.id)]).unlink()
@@ -239,4 +243,3 @@ class KonfooDataset(models.Model):
         results = list(map(lambda x: x[0], self.env.cr.fetchall()))
         _logger.info(results)
         return results
-
