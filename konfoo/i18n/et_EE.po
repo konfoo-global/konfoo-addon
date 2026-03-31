@@ -862,3 +862,10 @@ msgstr "Tarnijad"
 #: model:ir.model.fields.selection,name:konfoo.selection__konfoo_dataset_field__name__selection_dynamic
 msgid "list_model_fields"
 msgstr ""
+
+#. module: konfoo
+#. odoo-python
+#: code:addons/konfoo/views/konfoo_dataset.xml:0
+#, python-format
+msgid "Reset and Sync"
+msgstr "Lähtesta ja Sünkroniseeri"
