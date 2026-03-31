@@ -83,22 +83,6 @@
                     <field name="name" />
                     <field name="model_id" />
                     <field name="active" />
-                    <control>
-                        <button
-                            name="action_reset_dataset"
-                            type="object"
-                            string="Reset"
-                            confirm="Are you sure you want to re-initialize this dataset in Konfoo?" />
-                        <button
-                            name="action_sync_now"
-                            type="object"
-                            string="Sync now" />
-                        <button
-                            name="action_reset_and_sync"
-                            type="object"
-                            string="Reset and Sync"
-                            confirm="Are you sure you want to re-initialize this dataset in Konfoo?" />
-                    </control>
                 </list>
             </field>
         </record>
@@ -114,6 +98,33 @@
                     No datasets
                 </p>
             </field>
+        </record>
+
+        <record id="action_reset_dataset_bulk" model="ir.actions.server">
+            <field name="name">Reset</field>
+            <field name="model_id" ref="model_konfoo_dataset"/>
+            <field name="binding_model_id" ref="model_konfoo_dataset"/>
+            <field name="binding_view_types">list</field>
+            <field name="state">code</field>
+            <field name="code">records.action_reset_dataset()</field>
+        </record>
+
+        <record id="action_sync_now_bulk" model="ir.actions.server">
+            <field name="name">Sync now</field>
+            <field name="model_id" ref="model_konfoo_dataset"/>
+            <field name="binding_model_id" ref="model_konfoo_dataset"/>
+            <field name="binding_view_types">list</field>
+            <field name="state">code</field>
+            <field name="code">records.action_sync_now()</field>
+        </record>
+
+        <record id="action_reset_and_sync_bulk" model="ir.actions.server">
+            <field name="name">Reset and Sync</field>
+            <field name="model_id" ref="model_konfoo_dataset"/>
+            <field name="binding_model_id" ref="model_konfoo_dataset"/>
+            <field name="binding_view_types">list</field>
+            <field name="state">code</field>
+            <field name="code">records.action_reset_and_sync()</field>
         </record>
     </data>
 </odoo>
