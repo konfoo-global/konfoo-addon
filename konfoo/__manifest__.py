@@ -1,7 +1,7 @@
 # noinspection PyStatementEffect
 {
     'name': 'Konfoo',
-    'version': '1.16.0',
+    'version': '1.16.1',
     'author': 'Konfoo',
     'website': 'https://konfoo.com',
     'license': 'Other proprietary',
@@ -15,6 +15,7 @@
         'views/konfoo_allowed_model_17.xml',
         'views/konfoo_menus.xml',
         'views/sale_views_16.xml',
+        'views/product_views.xml',
         'views/res_config_settings_views_legacy.xml',  # settings block for <= 16.0
     ],
     'depends': [
@@ -47,6 +48,7 @@
                 'views/konfoo_allowed_model.xml',
                 'views/konfoo_menus.xml',
                 'views/sale_views.xml',
+                'views/product_views.xml',
                 'views/res_config_settings_views.xml',
             ],
         },
@@ -61,6 +63,7 @@
                 'views/konfoo_allowed_model_17.xml',
                 'views/konfoo_menus.xml',
                 'views/sale_views_17.xml',
+                'views/product_views.xml',
                 'views/res_config_settings_views.xml',
             ],
             'assets': {
@@ -81,6 +84,7 @@
                 'views/konfoo_allowed_model_17.xml',
                 'views/konfoo_menus.xml',
                 'views/sale_views_16.xml',
+                'views/product_views.xml',
                 'views/res_config_settings_views_legacy.xml',  # settings block for <= 16.0
             ],
             'assets': {
@@ -109,6 +113,7 @@
                 'views/konfoo_allowed_model_17.xml',
                 'views/konfoo_menus.xml',
                 'views/sale_views_16.xml',
+                'views/product_views.xml',
                 'views/res_config_settings_views_legacy.xml',  # settings block for <= 16.0
             ],
             'assets': {

@@ -52,6 +52,8 @@ If you do not need a parameter to be set then the value can be `None` or the key
 Changelog
 ---------
 
+- 1.16.1
+    - Add Konfoo tab to `product.template` showing configuration
 - 1.16.0
     - Support for `Many2one` and `One2many` IDs in dataset fields
 - 1.15.5
