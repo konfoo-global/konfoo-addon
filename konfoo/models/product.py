@@ -8,3 +8,8 @@ class ProductProduct(models.Model):
     _inherit = 'product.template'
 
     konfoo_session_id = fields.Many2one('konfoo.session', 'Konfoo Session ID', readonly=True)
+    konfoo_object_html = fields.Html(
+        related='konfoo_session_id.konfoo_object_html',
+        string='Konfoo Configuration',
+        readonly=True,
+    )
