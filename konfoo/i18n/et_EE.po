@@ -834,6 +834,20 @@ msgid "Unexpected response from Konfoo: %s"
 msgstr "Ootamatu veateade Konfoo teenuselt: %s"
 
 #. module: konfoo
+#. odoo-python
+#: code:addons/konfoo/models/konfoo_session.py:0
+#, python-format
+msgid "Created"
+msgstr "Loodud"
+
+#. module: konfoo
+#. odoo-python
+#: code:addons/konfoo/models/konfoo_session.py:0
+#, python-format
+msgid "Updated"
+msgstr "Uuendatud"
+
+#. module: konfoo
 #: model:ir.model.fields,field_description:konfoo.field_konfoo_dataset_field__is_unique
 msgid "Unique Index"
 msgstr "Unikaalne indeks"

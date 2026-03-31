@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+        <record id="konfoo_view_product_template_form_inherit" model="ir.ui.view">
+            <field name="name">product.template.form.inherit.konfoo</field>
+            <field name="model">product.template</field>
+            <field name="inherit_id" ref="product.product_template_form_view"/>
+            <field name="arch" type="xml">
+                <xpath expr="//notebook" position="inside">
+                    <page name="konfoo" string="Konfoo" invisible="not konfoo_session_id">
+                        <field name="konfoo_session_id" invisible="1"/>
+                        <field
+                            name="konfoo_object_html"
+                            widget="html"
+                            readonly="1"
+                            nolabel="1"
+                            options="{'collaborative': false, 'resizable': false}"
+                        />
+                    </page>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</odoo>
