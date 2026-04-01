@@ -99,6 +99,10 @@ class KonfooDataset(models.Model):
     def action_reset_dataset(self):
         self.reset_dataset()
 
+    def action_reset_and_sync(self):
+        self.reset_dataset()
+        self.action_sync_now()
+
     def reset_dataset(self, suppress_errors=False):
         konfoo = self.env['konfoo.api'].with_context(konfoo_suppress_errors=suppress_errors)
         for record in self:
