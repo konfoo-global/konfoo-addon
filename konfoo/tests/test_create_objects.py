@@ -1,5 +1,6 @@
-from odoo.tests import TransactionCase, tagged, Form
+from odoo.tests import tagged, Form
 from odoo.release import version_info
+from .konfoo_case import KonfooCase
 import json
 
 import logging
@@ -9,18 +10,10 @@ UOM_FIELD = 'product_uom_id' if version_info[:2] <= (19, 0) else 'uom_id'
 
 
 @tagged('-at_install', 'post_install')
-class TestKonfooCreateObjects(TransactionCase):
-
-    def _create_mock_product(self, values):
-        if version_info[:2] < (18, 0):
-            values['type'] = 'product'
-        else:
-            values['is_storable'] = True
-        return self.env['product.product'].create(values)
+class TestKonfooCreateObjects(KonfooCase):
 
     def test_create_product(self):
-        konfoo = self.env['konfoo.api']
-        self.assertIsNotNone(konfoo)
+        konfoo = self.konfoo()
 
         template_product = self._create_mock_product({
             'name': '[MOCK] Product Template',
@@ -47,13 +40,7 @@ class TestKonfooCreateObjects(TransactionCase):
         self.assertEqual(result.name, 'My Product')
 
     def test_create_bom_component(self):
-        konfoo = self.env['konfoo.api']
-        self.assertIsNotNone(konfoo)
-
-        template_main = self._create_mock_product({
-            'name': '[MOCK] Product Template',
-            'default_code': 'KONFOO-TEMPLATE'
-        })
+        konfoo = self.konfoo()
 
         product = self._create_mock_product({
             'name': '[MOCK] Mock Product',
@@ -61,7 +48,7 @@ class TestKonfooCreateObjects(TransactionCase):
         })
 
         bom = self.env['mrp.bom'].create({
-            'product_tmpl_id': template_main.product_tmpl_id.id,
+            'product_tmpl_id': self.template_product.product_tmpl_id.id,
         })
 
         data = json.loads("""
@@ -87,13 +74,7 @@ class TestKonfooCreateObjects(TransactionCase):
         self.assertEqual(bom_line.bom_id, bom)
 
     def test_create_bom_operation(self):
-        konfoo = self.env['konfoo.api']
-        self.assertIsNotNone(konfoo)
-
-        template_main = self._create_mock_product({
-            'name': '[MOCK] Product Template',
-            'default_code': 'KONFOO-TEMPLATE'
-        })
+        konfoo = self.konfoo()
 
         workcenter = self.env['mrp.workcenter'].create({
             'name': '[MOCK] Workcenter',
@@ -101,7 +82,7 @@ class TestKonfooCreateObjects(TransactionCase):
         })
 
         bom = self.env['mrp.bom'].create({
-            'product_tmpl_id': template_main.product_tmpl_id.id,
+            'product_tmpl_id': self.template_product.product_tmpl_id.id,
         })
 
         data = json.loads("""
@@ -130,8 +111,7 @@ class TestKonfooCreateObjects(TransactionCase):
         self.assertEqual(bom_op.bom_id, bom)
 
     def test_referenced_purchase_product(self):
-        konfoo = self.env['konfoo.api']
-        self.assertIsNotNone(konfoo)
+        konfoo = self.konfoo()
 
         template_main = self._create_mock_product({
             'name': '[MOCK] Product Template',
@@ -175,8 +155,7 @@ class TestKonfooCreateObjects(TransactionCase):
         self.assertEqual(bom_line.product_qty, 2)
 
     def test_yielding_identical_object(self):
-        konfoo = self.env['konfoo.api']
-        self.assertIsNotNone(konfoo)
+        konfoo = self.konfoo()
 
         company = self.env.user.company_id
 
@@ -269,8 +248,7 @@ class TestKonfooCreateObjects(TransactionCase):
         self.assertEqual(order_line_0.product_id.konfoo_session_id.id, session_1.id)
 
     def test_use_existing_if_exists(self):
-        konfoo = self.env['konfoo.api']
-        self.assertIsNotNone(konfoo)
+        konfoo = self.konfoo()
 
         company = self.env.user.company_id
 
