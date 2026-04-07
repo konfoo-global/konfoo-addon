@@ -1,7 +1,8 @@
-from odoo.tests import TransactionCase, tagged, Form
+from odoo.tests import tagged, Form
 from odoo import fields, release
 from odoo.release import version_info
 from odoo.addons.konfoo.models.konfoo_api import make_cache_key # noqa
+from .konfoo_case import KonfooCase
 import json
 
 import logging
@@ -31,60 +32,10 @@ TEST_BOM_DATA = json.loads("""
 
 
 @tagged('-at_install', 'post_install')
-class TestKonfooSetParentProps(TransactionCase):
-
-    def _create_mock_product(self, values):
-        if version_info[:2] < (18, 0):
-            values['type'] = 'product'
-        else:
-            values['is_storable'] = True
-        return self.env['product.product'].create(values)
-
-    def setUp(self):
-        super().setUp()
-
-        self.template_product = self._create_mock_product({
-            'name': '[MOCK] Product Template',
-            'default_code': 'KONFOO-TEMPLATE'
-        })
-
-        self.product = self._create_mock_product({
-            'name': '[MOCK] Mock Product',
-            'default_code': 'TEST'
-        })
-
-        customer = Form(self.env['res.partner'])
-        customer.name = '[MOCK] Customer'
-
-        (MAJOR, _, _, _, _, _THIS_NOT_IN_THE_FORMAT_SPEC) = release.version_info
-        if MAJOR <= 14:
-            property_account_payable_id = {
-                'name': 'Test Account Payable',
-                'code': 'TestAccountPayable',
-                'reconcile': True,
-                'user_type_id': self.env.ref('account.data_account_type_payable').id,
-            }
-            property_account_receivable_id = {
-                'name': 'Test Account Receivable',
-                'code': 'TestAccountReceivable',
-                'reconcile': True,
-                'user_type_id': self.env.ref('account.data_account_type_receivable').id,
-            }
-
-            if hasattr(self.env['res.partner'], 'property_account_payable_id'):
-                customer.property_account_payable_id = self.env['account.account'].create(property_account_payable_id)
-            if hasattr(self.env['res.partner'], 'property_account_receivable_id'):
-                customer.property_account_receivable_id = self.env['account.account'].create(property_account_receivable_id)
-
-        self.customer = customer.save()
-        self.sale_order = self.env['sale.order'].create({
-            'name': 'S00001',
-            'partner_id': self.customer.id,
-        })
+class TestKonfooSetParentProps(KonfooCase):
 
     def test_set_parent_property(self):
-        konfoo = self.env['konfoo.api']
-        self.assertIsNotNone(konfoo)
+        konfoo = self.konfoo()
         self.assertEqual(self.sale_order.commitment_date, False)
 
         template_product, product_name, additional_data, translated_data, options = konfoo.process_bom_metadata(TEST_BOM_DATA, self.sale_order)
@@ -95,8 +46,7 @@ class TestKonfooSetParentProps(TransactionCase):
         self.assertEqual(self.sale_order.commitment_date, fields.Datetime.from_string('2022-11-11'))
 
     def test_reference_parent(self):
-        konfoo = self.env['konfoo.api']
-        self.assertIsNotNone(konfoo)
+        konfoo = self.konfoo()
 
         line = TEST_BOM_DATA.get('data')[0]
         map_cache_objects = dict()
