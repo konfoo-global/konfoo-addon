@@ -1,5 +1,6 @@
-from odoo.tests import TransactionCase, tagged
+from odoo.tests import tagged
 from odoo.release import version_info
+from .konfoo_case import KonfooCase
 import json
 
 import logging
@@ -9,44 +10,22 @@ UOM_FIELD = 'product_uom_id' if version_info[:2] <= (19, 0) else 'uom_id'
 
 
 @tagged('-at_install', 'post_install')
-class TestKonfooMetadata(TransactionCase):
+class TestKonfooMetadata(KonfooCase):
 
     def setUp(self):
         super().setUp()
 
-        self.company = self.env.user.company_id
-
-        # NOTE: the values do not matter 'cause we avoid doing any requests
-        self.company.konfoo_url = self.company.konfoo_url_staging = 'http://localhost:8000'
-        self.company.konfoo_client_id_staging = self.company.konfoo_client_id = 'test'
-        self.company.konfoo_default_uom_id = self.env.ref('uom.product_uom_unit').id
-
-        if version_info[:2] < (18, 0):
-            self.env['product.product'].create({
-                'name': '[MOCK] Product',
-                'type': 'product',
-                'default_code': 'MOCK-PRODUCT'
-            })
-            self.env['product.product'].create({
-                'name': '[MOCK] Konfoo Template',
-                'type': 'product',
-                'default_code': 'MOCK-KONFOO-TEMPLATE'
-            })
-        else:
-            self.env['product.product'].create({
-                'name': '[MOCK] Product',
-                'is_storable': True,
-                'default_code': 'MOCK-PRODUCT'
-            })
-            self.env['product.product'].create({
-                'name': '[MOCK] Konfoo Template',
-                'is_storable': True,
-                'default_code': 'MOCK-KONFOO-TEMPLATE'
-            })
+        self.mock_product = self._create_mock_product({
+            'name': '[MOCK] Product',
+            'default_code': 'MOCK-PRODUCT'
+        })
+        self.mock_konfoo_template = self._create_mock_product({
+            'name': '[MOCK] Konfoo Template',
+            'default_code': 'MOCK-KONFOO-TEMPLATE'
+        })
 
     def test_metadata_1(self):
-        konfoo = self.env['konfoo.api']
-        self.assertIsNotNone(konfoo)
+        konfoo = self.konfoo()
 
         data = json.loads("""
             {
@@ -101,8 +80,7 @@ class TestKonfooMetadata(TransactionCase):
         self.assertEqual(order.order_line.product_id.description, '<b>Product Description</b>')
 
     def test_metadata_2(self):
-        konfoo = self.env['konfoo.api']
-        self.assertIsNotNone(konfoo)
+        konfoo = self.konfoo()
 
         self.env['res.lang']._activate_lang('et_EE')
         self.company.partner_id.write(dict(lang='et_EE'))

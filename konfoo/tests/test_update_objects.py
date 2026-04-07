@@ -1,5 +1,6 @@
-from odoo.tests import TransactionCase, tagged
+from odoo.tests import tagged
 from odoo.release import version_info
+from .konfoo_case import KonfooCase
 import json
 
 import logging
@@ -8,23 +9,10 @@ logger = logging.getLogger(__name__)
 UOM_FIELD = 'product_uom_id' if version_info[:2] <= (19, 0) else 'uom_id'
 
 @tagged('-at_install', 'post_install')
-class TestKonfooUpdateObjects(TransactionCase):
-
-    def _create_mock_product(self, values):
-        if version_info[:2] < (18, 0):
-            values['type'] = 'product'
-        else:
-            values['is_storable'] = True
-        return self.env['product.product'].create(values)
+class TestKonfooUpdateObjects(KonfooCase):
 
     def test_update_created_object(self):
-        konfoo = self.env['konfoo.api']
-        self.assertIsNotNone(konfoo)
-
-        template_main = self._create_mock_product({
-            'name': '[MOCK] Konfoo Template',
-            'default_code': 'KONFOO-TEMPLATE'
-        })
+        konfoo = self.konfoo()
 
         self._create_mock_product({
             'name': '[MOCK] BoM Product',
@@ -68,7 +56,7 @@ class TestKonfooUpdateObjects(TransactionCase):
             ]
         """ % (UOM_FIELD,))
 
-        bom, processed_objects = konfoo.process_aggregated_data(template_main.product_tmpl_id.id, dict(data=data), parent=None)
+        bom, processed_objects = konfoo.process_aggregated_data(self.template_product.product_tmpl_id.id, dict(data=data), parent=None)
         self.assertEqual(len(processed_objects), 4)
 
         created_product = processed_objects[0]
@@ -80,8 +68,7 @@ class TestKonfooUpdateObjects(TransactionCase):
         self.assertEqual(created_bom_line.product_qty, 2)
 
     def test_read_object(self):
-        konfoo = self.env['konfoo.api']
-        self.assertIsNotNone(konfoo)
+        konfoo = self.konfoo()
 
         product = self._create_mock_product({
             'name': '[MOCK] Read Product',
@@ -104,8 +91,7 @@ class TestKonfooUpdateObjects(TransactionCase):
         self.assertEqual(processed_object.type, product.type)
 
     def test_parse_records_lookup(self):
-        konfoo = self.env['konfoo.api']
-        self.assertIsNotNone(konfoo)
+        konfoo = self.konfoo()
 
         product = self._create_mock_product({
             'name': '[MOCK] Product Copy',

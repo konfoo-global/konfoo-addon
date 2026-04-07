@@ -27,6 +27,7 @@ METADATA_KEYWORDS = (
     'product_name_delimiter',
     'update_if_exists',
     'use_if_exists',
+    'enable_interpolation',
 )
 
 
@@ -312,6 +313,7 @@ class KonfooAPI(models.AbstractModel):
             raise ValidationError(_('Konfoo BOM data structure contains no `template_product`'))
 
         use_parent_name_prefix = bool(meta.get('use_parent_name_prefix', True))
+        enable_interpolation = bool(meta.get('enable_interpolation', False))
         product_name_delimiter = str(meta.get('product_name_delimiter', ' '))
 
         update_if_exists = meta.get('update_if_exists', False)
@@ -408,22 +410,26 @@ class KonfooAPI(models.AbstractModel):
             product_name_delimiter=product_name_delimiter,
             update_if_exists=update_if_exists,
             use_if_exists=use_if_exists,
+            enable_interpolation=enable_interpolation,
         )
 
         return template_product, product_name, additional_data, translated_data, options
 
     @api.model
-    def process_konfoo_session(self, ctx, session_key, session_data, bom_data, parent, line_model):
+    def process_konfoo_session(self, ctx, session_key, session_data, bom_data, parent, line_model_name):
         _logger.info('Creating/updating Konfoo session data: %s', session_key)
         session_object = self._create_or_update_konfoo_session(session_key, session_data, bom_data)
 
         line_vals = {}
+        line_model = self.env[line_model_name]
 
         template_product, product_name, additional_data, translated_data, options = self.process_bom_metadata(
             bom_data, parent,
             line=line_vals,
-            line_model=self.env[line_model]
+            line_model=line_model
         )
+
+        this = self.with_context(**options)
 
         # Default to product name if not specified by user
         # This does not work together with translated product names
@@ -432,7 +438,7 @@ class KonfooAPI(models.AbstractModel):
 
         _logger.info('Metadata processed - template=%s', template_product)
 
-        (product, created, ignore_rules) = self._konfoo_product(
+        (product, created, ignore_rules) = this._konfoo_product(
             ctx, session_object.id, template_product, product_name,
             additional_data=additional_data,
             translated_data=translated_data,
@@ -440,15 +446,16 @@ class KonfooAPI(models.AbstractModel):
 
         _logger.info('Using product: %s (id=%s)', product.name, product.id)
         if not ignore_rules:
-            bom, created_objects = self.process_aggregated_data(product.product_tmpl_id.id, bom_data, parent=parent)
+            bom, created_objects = this.process_aggregated_data(product.product_tmpl_id.id, bom_data, parent=parent)
             _logger.info('Created BOM: %s', bom.id)
             _logger.info('Updating cost')
             product.button_bom_cost()
 
         if created:
-            line_model_options = self.get_default_line_options()
-            if getattr(self.env[line_model], 'konfoo_options', None):
-                line_model_options = self.env[line_model].konfoo_options()
+            line_model_options = this.get_default_line_options()
+            if getattr(line_model, 'konfoo_options', None):
+                # noinspection PyUnresolvedReferences
+                line_model_options = line_model.konfoo_options()
 
             if line_model_options.get('quantity'):
                 line_vals[line_model_options.get('quantity')] = 1
@@ -461,12 +468,12 @@ class KonfooAPI(models.AbstractModel):
             if line_model_options.get('parent_id'):
                 line_vals[line_model_options.get('parent_id')] = parent.id
 
-            _logger.info('Creating %s: %s', line_model, line_vals)
-            line = self.env[line_model].create(line_vals)
+            _logger.info('Creating %s: %s', line_model_name, line_vals)
+            line = line_model.create([line_vals])
             _logger.info('Created: %s', line)
         else:
-            line_lookup_domain = self.get_line_lookup_domain(line_model, session_object.id)
-            lines = self.env[line_model].search(line_lookup_domain)
+            line_lookup_domain = this.get_line_lookup_domain(line_model_name, session_object.id)
+            lines = line_model.search(line_lookup_domain)
             _logger.info('Updating %s: %s', lines, line_vals)
             lines.write(line_vals)
             _logger.info('Updated: %s', lines)
@@ -476,12 +483,12 @@ class KonfooAPI(models.AbstractModel):
         bom = self.env['mrp.bom'].search([
             ('product_tmpl_id', '=', product_tmpl_id),
             ('active', '=', True)
-        ], limit=1)  # pick first ordered by sequence
+        ], limit=1)  # pick first, ordered by sequence
 
         if not bom:
-            bom = self.env['mrp.bom'].create({
+            bom = self.env['mrp.bom'].create([{
                 'product_tmpl_id': product_tmpl_id,
-            })
+            }])
 
         allowed_models = self.allowed_models()
         map_cache_objects = dict()
@@ -567,7 +574,7 @@ class KonfooAPI(models.AbstractModel):
         elif line_command != 'rpc':
             line_method = line_command
 
-        model_objects = None  # Template for create or recordset for other commands
+        model_objects = None  # Template for `create` or recordset for other commands
 
         line_records = data.get('records')
         if line_records:
@@ -624,7 +631,7 @@ class KonfooAPI(models.AbstractModel):
                 continue
 
             # All other keys are handled as static
-            create[key] = value
+            create[key] = self._process_value(line_instance_id, value, map_cache_objects=map_cache_objects)
 
         return self.env[line_model], create, model_objects, line_method
 
@@ -868,6 +875,47 @@ class KonfooAPI(models.AbstractModel):
         return product, create_line, ignore_rules
 
     @api.model
+    def _process_value(self, line_instance_id, value, map_cache_objects=None):
+        _logger.info(f"{self.env.context.get('enable_interpolation', False)=}")
+        if not self.env.context.get('enable_interpolation', False) or not isinstance(value, str):
+            return value
+
+        if not map_cache_objects:
+            return value
+
+        # Pattern to match {{object.field}} templates
+        pattern = r'\{\{(\w+)\.(\w+)\}\}'
+
+        def replace_template(match):
+            object_name = match.group(1)
+            field_name = match.group(2)
+
+            # Look up the object in the cache
+            cache_key = make_cache_key(object_name, line_instance_id)
+            obj = map_cache_objects.get(cache_key)
+
+            if obj is None:
+                _logger.warning(
+                    'Template interpolation failed: object "%s" not found in cache for instance "%s"',
+                    object_name, line_instance_id
+                )
+                return match.group(0)
+
+            # Get field value from the object
+            if not hasattr(obj, field_name):
+                _logger.warning(
+                    'Template interpolation failed: field "%s" not found on object "%s"',
+                    field_name, object_name
+                )
+                return match.group(0)
+
+            field_value = getattr(obj, field_name, '')
+            return str(field_value) if field_value else ''
+
+        interpolated_value = re.sub(pattern, replace_template, value)
+        return interpolated_value
+
+    @api.model
     def _create_or_update_konfoo_session(self, session_id, session_data, bom_data):
         json_session = json.dumps(session_data)
         json_bom = json.dumps(bom_data)
@@ -879,11 +927,11 @@ class KonfooAPI(models.AbstractModel):
             })
             return session
         else:
-            return self.env['konfoo.session'].create({
+            return self.env['konfoo.session'].create([{
                 'konfoo_session_id': session_id,
                 'konfoo_object': json_session,
                 'konfoo_bom': json_bom,
-            })
+            }])
 
     @api.model
     def _get_sponge_url(self):
