@@ -52,6 +52,8 @@ If you do not need a parameter to be set then the value can be `None` or the key
 Changelog
 ---------
 
+- 1.17.0
+    - Add meta option `enable_interpolation` to allow referencing created objects in values, e.g. `{{parent.name}}`
 - 1.16.2
     - Add Reset and Sync button to konfoo dataset views
 - 1.16.1
