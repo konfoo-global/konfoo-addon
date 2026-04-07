@@ -31,4 +31,6 @@ venv
 
 .idea
 .vscode
+.claude
+.adev
 *.code-workspace
