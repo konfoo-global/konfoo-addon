@@ -71,7 +71,7 @@ class KonfooTranslations(object):
         if not env and not values:
             raise UserError(_('Unable to create object KonfooTranslations'))
 
-        company_lang = env.user.company_id.partner_id.lang
+        company_lang = env.company.partner_id.lang
         if isinstance(values, dict):
             translation_values = values
         else:
@@ -163,7 +163,7 @@ class KonfooContext(object):
         if not env and not company_id:
             raise UserError(_('Unable to create Konfoo context'))
 
-        company = company_id if company_id else env.user.company_id
+        company = company_id if company_id else env.company
 
         self.konfoo_url = company.konfoo_url if is_production() else company.konfoo_url_staging
         if not self.konfoo_url:
@@ -215,7 +215,7 @@ class KonfooAPI(models.AbstractModel):
             'sale.order.line',
         }
 
-        user_allowed = self.env['konfoo.allowed.model'].search([('company_id', '=', self.env.user.company_id.id)])
+        user_allowed = self.env['konfoo.allowed.model'].search([('company_id', '=', self.env.company.id)])
         for record in user_allowed:
             allowed.add(record.model)
 
@@ -935,7 +935,7 @@ class KonfooAPI(models.AbstractModel):
 
     @api.model
     def _get_sponge_url(self):
-        company = self.env.user.company_id
+        company = self.env.company
         url = company.konfoo_sync_host if is_production() else company.konfoo_sync_host_staging
         if not url:
             raise UserError(_('Konfoo sync host is not configured'))
@@ -943,7 +943,7 @@ class KonfooAPI(models.AbstractModel):
 
     @api.model
     def _get_sponge_key(self):
-        company = self.env.user.company_id
+        company = self.env.company
         key = company.konfoo_sync_key if is_production() else company.konfoo_sync_key_staging
         if not key:
             raise UserError(_('Konfoo sync key is not configured'))
@@ -951,7 +951,7 @@ class KonfooAPI(models.AbstractModel):
 
     @api.model
     def _get_konfoo_url(self):
-        company = self.env.user.company_id
+        company = self.env.company
         url = company.konfoo_url if is_production() else company.konfoo_url_staging
         if not url:
             raise UserError(_('Konfoo URL is not configured'))
