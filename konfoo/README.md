@@ -52,6 +52,8 @@ If you do not need a parameter to be set then the value can be `None` or the key
 Changelog
 ---------
 
+- 1.17.1
+    - Fix Konfoo API using the user's default company instead of the currently active company
 - 1.17.0
     - Add meta option `enable_interpolation` to allow referencing created objects in values, e.g. `{{parent.name}}`
 - 1.16.2
