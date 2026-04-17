@@ -52,6 +52,9 @@ If you do not need a parameter to be set then the value can be `None` or the key
 Changelog
 ---------
 
+- 1.17.2
+    - Remove debug output in logs
+    - Correct log text no longer matching the actual functionality
 - 1.17.1
     - Fix Konfoo API using the user's default company instead of the currently active company
 - 1.17.0
