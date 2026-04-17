@@ -496,16 +496,16 @@ class KonfooAPI(models.AbstractModel):
 
         for line in agg_data['data']:
             if '__id__' not in line:
-                _logger.warning('Received BOM line with no defined __id__: %s', line)
+                _logger.warning('Received step with no defined __id__: %s', line)
                 continue
 
             if 'model' not in line:
-                _logger.warning('Received BOM line with no defined model: %s', line)
+                _logger.warning('Received step with no defined model: %s', line)
                 continue
 
             line_model = line['model']
             if line_model not in allowed_models:
-                _logger.warning('Received BOM line with disallowed model: %s', line_model)
+                _logger.warning('Received step with disallowed model: %s', line_model)
                 continue
 
             if parent:
@@ -876,7 +876,6 @@ class KonfooAPI(models.AbstractModel):
 
     @api.model
     def _process_value(self, line_instance_id, value, map_cache_objects=None):
-        _logger.info(f"{self.env.context.get('enable_interpolation', False)=}")
         if not self.env.context.get('enable_interpolation', False) or not isinstance(value, str):
             return value
 
