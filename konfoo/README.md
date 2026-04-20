@@ -52,6 +52,9 @@ If you do not need a parameter to be set then the value can be `None` or the key
 Changelog
 ---------
 
+- 1.17.3
+    - Add more verbose logging
+    - Correctly handle `line.product_uom_qty` in `meta` block
 - 1.17.2
     - Remove debug output in logs
     - Correct log text no longer matching the actual functionality
