@@ -458,9 +458,9 @@ class KonfooAPI(models.AbstractModel):
                 line_model_options = line_model.konfoo_options()
 
             if line_model_options.get('quantity'):
-                line_vals[line_model_options.get('quantity')] = 1
+                line_vals[line_model_options.get('quantity')] = line_vals.get(line_model_options.get('quantity'), 1)
             if line_model_options.get('uom'):
-                line_vals[line_model_options.get('uom')] = ctx.default_uom.id
+                line_vals[line_model_options.get('uom')] = line_vals.get(line_model_options.get('uom'), ctx.default_uom.id)
             if line_model_options.get('product_id'):
                 line_vals[line_model_options.get('product_id')] = product.id
             if line_model_options.get('product_template_id'):
@@ -516,6 +516,9 @@ class KonfooAPI(models.AbstractModel):
                 line.get('__id__'), line_model, line.get('__instance__', 'anon'))
 
             obj = self.process_aggregated_data_line(line, bom.id, map_cache_objects=map_cache_objects)
+            _logger.info(
+                'Rule %s output: %s',
+                line.get('__id__'), obj)
             processed_objects.append(obj)
 
         return bom, processed_objects
@@ -534,6 +537,7 @@ class KonfooAPI(models.AbstractModel):
             elif method == 'read':
                 res = object
             elif method == 'write':
+                _logger.info(f'write: {object=}; {values=};')
                 object.write(values)
                 res = object
             else:
