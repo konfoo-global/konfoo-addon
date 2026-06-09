@@ -52,6 +52,9 @@ If you do not need a parameter to be set then the value can be `None` or the key
 Changelog
 ---------
 
+- 1.17.4
+    - Add copy seller_ids from template product on main product creation
+    - Add test_seller_ids_copied_for_main_product to verify seller_ids are copied
 - 1.17.3
     - Add more verbose logging
     - Correctly handle `line.product_uom_qty` in `meta` block

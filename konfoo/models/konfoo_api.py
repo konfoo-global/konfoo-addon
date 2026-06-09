@@ -871,6 +871,9 @@ class KonfooAPI(models.AbstractModel):
             if additional_data is not None:
                 create.update(additional_data)
             product = template_product.copy(create)
+            if template_product.product_tmpl_id.seller_ids:
+                sellers = template_product.product_tmpl_id.seller_ids.copy()
+                product.product_tmpl_id.write({'seller_ids': sellers.ids})
             if translated_data is not None:
                 for field, translations in translated_data.items():
                     for lang, value in translations.items():
