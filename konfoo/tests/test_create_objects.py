@@ -247,6 +247,74 @@ class TestKonfooCreateObjects(KonfooCase):
         self.assertEqual(order_line_1.product_id.konfoo_session_id.id, session_1.id)
         self.assertEqual(order_line_0.product_id.konfoo_session_id.id, session_1.id)
 
+    def test_seller_ids_copied_for_main_product(self):
+        konfoo = self.konfoo()
+
+        company = self.env.user.company_id
+
+        # NOTE: the values do not matter 'cause we avoid doing any requests
+        company.konfoo_url = company.konfoo_url_staging = 'http://localhost:8000'
+        company.konfoo_client_id_staging = company.konfoo_client_id = 'test'
+        company.konfoo_default_uom_id = self.env.ref('uom.product_uom_unit').id
+        ctx = konfoo.configure()
+
+        template_product = self._create_mock_product({
+            'name': '[MOCK] Product Template',
+            'default_code': 'KONFOO-TEMPLATE-sellers-rN8wq1'
+        })
+
+        self._create_mock_product({
+            'name': '[MOCK] Component 1',
+            'default_code': 'COMPONENT-sellers-rN8wq1'
+        })
+
+        supplier_form = Form(self.env['res.partner'])
+        supplier_form.name = '[MOCK] Supplier'
+        supplier = supplier_form.save()
+
+        self.env['product.supplierinfo'].create({
+            'product_tmpl_id': template_product.product_tmpl_id.id,
+            'partner_id': supplier.id,
+            'price': 42.0,
+        })
+
+        partner_form = Form(self.env['res.partner'])
+        partner_form.name = 'Test Partner'
+        partner = partner_form.save()
+
+        sale_order_form = Form(self.env['sale.order'])
+        sale_order_form.partner_id = partner
+        sale_order = sale_order_form.save()
+
+        data = json.loads("""
+            {
+                "meta": {
+                    "name": "Product With Sellers",
+                    "template_product": "KONFOO-TEMPLATE-sellers-rN8wq1"
+                },
+                "name": "Bill of materials",
+                "data": [
+                    {
+                        "__id__": "component_1",
+                        "__instance__": "01SELLERAAAAAAAAAAAAAAAAAA",
+                        "model": "mrp.bom.line",
+                        "product_id := product.product.default_code": "COMPONENT-sellers-rN8wq1",
+                        "product_qty": 1,
+                        "%s := uom.uom.name": "Units"
+                    }
+                ]
+            }
+        """ % (UOM_FIELD,))
+
+        konfoo.process_konfoo_session(ctx, '01SELLERSSSSSSSSSSSSSSSSS0', dict(), data, sale_order, 'sale.order.line')
+
+        self.assertEqual(len(sale_order.order_line), 1)
+
+        created_product = sale_order.order_line[0].product_id
+        self.assertEqual(len(created_product.product_tmpl_id.seller_ids), 1)
+        self.assertEqual(created_product.product_tmpl_id.seller_ids[0].partner_id, supplier)
+        self.assertAlmostEqual(created_product.product_tmpl_id.seller_ids[0].price, 42.0)
+
     def test_use_existing_if_exists(self):
         konfoo = self.konfoo()
 
