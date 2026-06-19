@@ -52,6 +52,8 @@ If you do not need a parameter to be set then the value can be `None` or the key
 Changelog
 ---------
 
+- 1.17.5
+    - Removed `company_id` filter from Allowed Models since it causes more misconfigurations than it provides any benefit.
 - 1.17.4
     - Add copy seller_ids from template product on main product creation
     - Add test_seller_ids_copied_for_main_product to verify seller_ids are copied
