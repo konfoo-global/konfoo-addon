@@ -215,7 +215,7 @@ class KonfooAPI(models.AbstractModel):
             'sale.order.line',
         }
 
-        user_allowed = self.env['konfoo.allowed.model'].search([('company_id', '=', self.env.company.id)])
+        user_allowed = self.env['konfoo.allowed.model'].search([])
         for record in user_allowed:
             allowed.add(record.model)
 
