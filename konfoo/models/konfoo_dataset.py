@@ -67,7 +67,7 @@ class KonfooDataset(models.Model):
         for record in self:
             valid_dataset_name(record.name)
 
-    @api.model
+    @api.model_create_multi
     def create(self, vals_list):
         records = super().create(vals_list)
         records.reset_dataset(suppress_errors=True)

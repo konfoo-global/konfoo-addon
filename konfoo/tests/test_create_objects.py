@@ -4,7 +4,7 @@ from .konfoo_case import KonfooCase
 import json
 
 import logging
-logger = logging.getLogger(__name__)
+_logger = logging.getLogger(__name__)
 
 UOM_FIELD = 'product_uom_id' if version_info[:2] <= (19, 0) else 'uom_id'
 
@@ -142,7 +142,7 @@ class TestKonfooCreateObjects(KonfooCase):
             }]
         """ % (UOM_FIELD,))
 
-        bom, created_objects = konfoo.process_aggregated_data(template_main.product_tmpl_id.id, dict(data=data), parent=None)
+        bom, created_objects = konfoo.process_aggregated_data(template_main.product_tmpl_id, dict(data=data), parent=None)
         self.assertTrue(bool(bom))
         self.assertEqual(len(created_objects), 2)
         self.assertEqual(len(bom.bom_line_ids), 1)
@@ -314,6 +314,54 @@ class TestKonfooCreateObjects(KonfooCase):
         self.assertEqual(len(created_product.product_tmpl_id.seller_ids), 1)
         self.assertEqual(created_product.product_tmpl_id.seller_ids[0].partner_id, supplier)
         self.assertAlmostEqual(created_product.product_tmpl_id.seller_ids[0].price, 42.0)
+
+    def test_referenced_product_id_alias(self):
+        konfoo = self.konfoo()
+
+        component_product = self._create_mock_product({
+            'name': '[MOCK] Product ID component',
+            'default_code': 'COMPONENT-product-id'
+        })
+
+        data = json.loads("""
+            [
+                {
+                    "__id__": "component_product",
+                    "__instance__": "01PRODUCTIDAAAAAAAAAAAAAAA",
+                    "model": "product.product",
+                    "name := name": "product",
+                    "template := product.product.default_code": "COMPONENT-product-id"
+                }
+            ]
+        """)
+
+        bom, created_objects = konfoo.process_aggregated_data(self.template_product.product_tmpl_id, dict(data=data), parent=None)
+        self.assertTrue(bool(bom))
+        self.assertEqual(len(created_objects), 1)
+        created = created_objects[0]
+        self.assertEqual(created.name, self.template_product.product_tmpl_id.name)
+
+    def test_referenced_bom_id_alias(self):
+        konfoo = self.konfoo()
+        self.env['konfoo.allowed.model'].create(dict(model='mrp.bom'))
+
+        data = json.loads("""
+            [
+                {
+                    "__id__": "bom_update",
+                    "__instance__": "01BOMIDAAAAAAAAAAAAAAAAAAA",
+                    "command": "write",
+                    "model": "mrp.bom",
+                    "records": "(search) [('id', '=', bom)]",
+                    "code": "BOM-ID-ALIAS"
+                }
+            ]
+        """)
+
+        bom, created_objects = konfoo.process_aggregated_data(self.template_product.product_tmpl_id, dict(data=data), parent=None)
+        self.assertEqual(len(created_objects), 1)
+        self.assertEqual(created_objects[0], bom)
+        self.assertEqual(bom.code, 'BOM-ID-ALIAS')
 
     def test_use_existing_if_exists(self):
         konfoo = self.konfoo()
