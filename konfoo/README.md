@@ -52,6 +52,9 @@ If you do not need a parameter to be set then the value can be `None` or the key
 Changelog
 ---------
 
+- 1.18.0
+    - Fix `konfoo.dataset` `create` method decorator
+    - Add support for referencing the main product and main product bom in aggregator rules
 - 1.17.5
     - Removed `company_id` filter from Allowed Models since it causes more misconfigurations than it provides any benefit.
 - 1.17.4

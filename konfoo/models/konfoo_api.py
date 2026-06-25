@@ -446,7 +446,7 @@ class KonfooAPI(models.AbstractModel):
 
         _logger.info('Using product: %s (id=%s)', product.name, product.id)
         if not ignore_rules:
-            bom, created_objects = this.process_aggregated_data(product.product_tmpl_id.id, bom_data, parent=parent)
+            bom, created_objects = this.process_aggregated_data(product.product_tmpl_id, bom_data, parent=parent)
             _logger.info('Created BOM: %s', bom.id)
             _logger.info('Updating cost')
             product.button_bom_cost()
@@ -479,16 +479,18 @@ class KonfooAPI(models.AbstractModel):
             _logger.info('Updated: %s', lines)
 
     @api.model
-    def process_aggregated_data(self, product_tmpl_id, agg_data, parent=None):
+    def process_aggregated_data(self, product_template, agg_data, parent=None):
+        assert product_template
         bom = self.env['mrp.bom'].search([
-            ('product_tmpl_id', '=', product_tmpl_id),
+            ('product_tmpl_id', '=', product_template.id),
             ('active', '=', True)
         ], limit=1)  # pick first, ordered by sequence
 
         if not bom:
             bom = self.env['mrp.bom'].create([{
-                'product_tmpl_id': product_tmpl_id,
+                'product_tmpl_id': product_template.id,
             }])
+        assert bom
 
         allowed_models = self.allowed_models()
         map_cache_objects = dict()
@@ -508,6 +510,8 @@ class KonfooAPI(models.AbstractModel):
                 _logger.warning('Received step with disallowed model: %s', line_model)
                 continue
 
+            map_cache_objects[make_cache_key('product', line.get('__instance__', 'anon'))] = product_template
+            map_cache_objects[make_cache_key('bom', line.get('__instance__', 'anon'))] = bom
             if parent:
                 map_cache_objects[make_cache_key('parent', line.get('__instance__', 'anon'))] = parent
 

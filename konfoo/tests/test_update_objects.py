@@ -56,7 +56,7 @@ class TestKonfooUpdateObjects(KonfooCase):
             ]
         """ % (UOM_FIELD,))
 
-        bom, processed_objects = konfoo.process_aggregated_data(self.template_product.product_tmpl_id.id, dict(data=data), parent=None)
+        bom, processed_objects = konfoo.process_aggregated_data(self.template_product.product_tmpl_id, dict(data=data), parent=None)
         self.assertEqual(len(processed_objects), 4)
 
         created_product = processed_objects[0]
