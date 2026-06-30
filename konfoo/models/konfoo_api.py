@@ -644,14 +644,23 @@ class KonfooAPI(models.AbstractModel):
         return self.env[line_model], create, model_objects, line_method
 
     @api.model
+    def _copy_seller_ids(self, template_product, new_product):
+        sellers = template_product.product_tmpl_id.seller_ids
+        if not sellers:
+            return
+        sellers_copy = sellers.copy()
+        sellers_with_variant = sellers_copy.filtered(lambda s: s.product_id == template_product)
+        if sellers_with_variant:
+            sellers_with_variant.product_id = new_product
+        new_product.product_tmpl_id.write({'seller_ids': sellers_copy.ids})
+
+    @api.model
     def create_object(self, model, create, template_object=None):
         if template_object:
             if template_object._name == 'product.product':
                 tmpl_copy = template_object.product_tmpl_id.with_context({'lang': 'en_US'}).copy(create)
-                if template_object.product_tmpl_id.seller_ids:
-                    sellers = template_object.product_tmpl_id.seller_ids.copy()
-                    tmpl_copy.write({'seller_ids': sellers.ids})
                 copy = tmpl_copy.product_variant_id
+                self._copy_seller_ids(template_object, copy)
             else:
                 copy = template_object.with_context({'lang': 'en_US'}).copy(create)
             return copy
@@ -875,9 +884,7 @@ class KonfooAPI(models.AbstractModel):
             if additional_data is not None:
                 create.update(additional_data)
             product = template_product.copy(create)
-            if template_product.product_tmpl_id.seller_ids:
-                sellers = template_product.product_tmpl_id.seller_ids.copy()
-                product.product_tmpl_id.write({'seller_ids': sellers.ids})
+            self._copy_seller_ids(template_product, product)
             if translated_data is not None:
                 for field, translations in translated_data.items():
                     for lang, value in translations.items():
