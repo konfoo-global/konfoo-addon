@@ -52,6 +52,8 @@ If you do not need a parameter to be set then the value can be `None` or the key
 Changelog
 ---------
 
+- 1.18.2
+    - Adds `on_konfoo_completed` handler for the parent model
 - 1.18.1
     - Fix MTO + Buy not triggering after konfoo product creation due to copied `seller_ids` retaining old variant's `product_id`
 - 1.18.0
