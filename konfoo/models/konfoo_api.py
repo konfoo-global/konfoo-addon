@@ -469,14 +469,17 @@ class KonfooAPI(models.AbstractModel):
                 line_vals[line_model_options.get('parent_id')] = parent.id
 
             _logger.info('Creating %s: %s', line_model_name, line_vals)
-            line = line_model.create([line_vals])
-            _logger.info('Created: %s', line)
+            line_ids = line_model.create([line_vals])
+            _logger.info('Created: %s', line_ids)
         else:
             line_lookup_domain = this.get_line_lookup_domain(line_model_name, session_object.id)
-            lines = line_model.search(line_lookup_domain)
-            _logger.info('Updating %s: %s', lines, line_vals)
-            lines.write(line_vals)
-            _logger.info('Updated: %s', lines)
+            line_ids = line_model.search(line_lookup_domain)
+            _logger.info('Updating %s: %s', line_ids, line_vals)
+            line_ids.write(line_vals)
+            _logger.info('Updated: %s', line_ids)
+
+        if hasattr(parent, 'on_konfoo_completed'):
+            parent.on_konfoo_completed(line_ids, product)
 
     @api.model
     def process_aggregated_data(self, product_template, agg_data, parent=None):
