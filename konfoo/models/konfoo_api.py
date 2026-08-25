@@ -492,6 +492,7 @@ class KonfooAPI(models.AbstractModel):
         if not bom:
             bom = self.env['mrp.bom'].create([{
                 'product_tmpl_id': product_template.id,
+                'company_id': product_template.company_id.id,
             }])
         assert bom
 
@@ -540,11 +541,12 @@ class KonfooAPI(models.AbstractModel):
         # noinspection PyBroadException
         try:
             if method == 'create':
+                _logger.info(f'create: {model=}; {object=}; {values=};')
                 res = self.create_object(model, values, object)
             elif method == 'read':
                 res = object
             elif method == 'write':
-                _logger.info(f'write: {object=}; {values=};')
+                _logger.info(f'write: {model=}; {object=}; {values=};')
                 object.write(values)
                 res = object
             else:
