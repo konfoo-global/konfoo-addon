@@ -52,6 +52,8 @@ If you do not need a parameter to be set then the value can be `None` or the key
 Changelog
 ---------
 
+- 1.18.3
+    - Ensure the main BOM is created using the same company_id as the main product
 - 1.18.2
     - Adds `on_konfoo_completed` handler for the parent model
 - 1.18.1
