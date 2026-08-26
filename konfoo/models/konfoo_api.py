@@ -478,8 +478,7 @@ class KonfooAPI(models.AbstractModel):
             line_ids.write(line_vals)
             _logger.info('Updated: %s', line_ids)
 
-        if hasattr(parent, 'on_konfoo_completed'):
-            parent.on_konfoo_completed(line_ids, product)
+        parent.on_konfoo_completed(line_ids, product)
 
     @api.model
     def process_aggregated_data(self, product_template, agg_data, parent=None):
@@ -663,7 +662,10 @@ class KonfooAPI(models.AbstractModel):
     def create_object(self, model, create, template_object=None):
         if template_object:
             if template_object._name == 'product.product':
-                tmpl_copy = template_object.product_tmpl_id.with_context({'lang': 'en_US'}).copy(create)
+                tmpl_copy = template_object.product_tmpl_id.with_context({
+                    'lang': 'en_US',
+                    'konfoo_create_object': True,
+                }).copy(create)
                 copy = tmpl_copy.product_variant_id
                 self._copy_seller_ids(template_object, copy)
             else:
