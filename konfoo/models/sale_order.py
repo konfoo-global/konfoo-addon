@@ -29,6 +29,12 @@ class SaleOrder(models.Model):
             },
         }
 
+    def on_konfoo_completed(self, line_ids, product):
+        """
+        Override this method to perform actions after a Konfoo session has completed.
+        """
+        pass
+
 
 class SaleOrderLine(models.Model):
     _inherit = 'sale.order.line'
