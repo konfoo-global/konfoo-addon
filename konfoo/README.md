@@ -52,6 +52,8 @@ If you do not need a parameter to be set then the value can be `None` or the key
 Changelog
 ---------
 
+- 1.19.1
+    - Display all fields regardless of value in the Konfoo tab
 - 1.19.0
     - Promote `sale.order` `on_konfoo_completed` method to proper overridable method instead of call-by-convention
     - Add a `konfoo_create_object` context flag for objects created from within Konfoo session so `copy()` customizations can be scoped better

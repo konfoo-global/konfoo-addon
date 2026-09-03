@@ -91,10 +91,6 @@ class KonfooSession(models.Model):
             obj_fields = obj.get('fields', {})
             obj_name = obj.get('name', '')
 
-            visible_fields = {k: v for k, v in obj_fields.items() if v not in (None, '', [], {})}
-            if not visible_fields:
-                continue
-
             title = obj_name if obj_name else obj_id
 
             parts.append(f'<div style="{section_wrapper_style}"><div style="{section_style}">{title}</div></div>')
@@ -106,7 +102,7 @@ class KonfooSession(models.Model):
                 f'</tr>'
             )
 
-            for field_name, field_value in visible_fields.items():
+            for field_name, field_value in obj_fields.items():
                 display_value = (
                     field_value
                     if not isinstance(field_value, (dict, list))
