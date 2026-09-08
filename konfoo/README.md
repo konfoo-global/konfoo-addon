@@ -52,6 +52,8 @@ If you do not need a parameter to be set then the value can be `None` or the key
 Changelog
 ---------
 
+- 1.20.0
+    - Compatibility: Port to ir.access.csv for edge compatibility
 - 1.19.1
     - Display all fields regardless of value in the Konfoo tab
 - 1.19.0
