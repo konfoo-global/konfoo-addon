@@ -52,6 +52,8 @@ If you do not need a parameter to be set then the value can be `None` or the key
 Changelog
 ---------
 
+- 1.21.0
+    - Rules validate their own output: a line with `validate: false` aborts the import with an error
 - 1.20.0
     - Compatibility: Port to ir.access.csv for edge compatibility
 - 1.19.1
