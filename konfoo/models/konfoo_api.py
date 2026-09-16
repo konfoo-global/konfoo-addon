@@ -513,6 +513,13 @@ class KonfooAPI(models.AbstractModel):
                 _logger.warning('Received step with disallowed model: %s', line_model)
                 continue
 
+            # rules validate their own output, absent validate means valid
+            if not line.get('validate', True):
+                _logger.warning('Rule %s failed validation: %s', line.get('__id__'), line)
+                raise ValidationError(_(
+                    'Rule "%s" produced invalid output (instance=%s):\n%s',
+                    line.get('__id__'), line.get('__instance__', 'anon'), line))
+
             map_cache_objects[make_cache_key('product', line.get('__instance__', 'anon'))] = product_template
             map_cache_objects[make_cache_key('bom', line.get('__instance__', 'anon'))] = bom
             if parent:
@@ -570,7 +577,7 @@ class KonfooAPI(models.AbstractModel):
 
     @api.model
     def process_agg_line_struct(self, data, additional_data=None, map_cache_objects=None):
-        reserved = ('__id__', '__instance__', 'model', 'command', 'method', 'records')
+        reserved = ('__id__', '__instance__', 'model', 'command', 'method', 'records', 'validate')
 
         line_instance_id = data.get('__instance__', 'anon')
         line_model = data.get('model')
