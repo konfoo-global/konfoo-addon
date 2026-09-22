@@ -449,7 +449,7 @@ class KonfooAPI(models.AbstractModel):
             bom, created_objects = this.process_aggregated_data(product.product_tmpl_id, bom_data, parent=parent)
             _logger.info('Created BOM: %s', bom.id)
             _logger.info('Updating cost')
-            product.button_bom_cost()
+            product.sudo().button_bom_cost()
 
         if created:
             line_model_options = this.get_default_line_options()
@@ -483,13 +483,14 @@ class KonfooAPI(models.AbstractModel):
     @api.model
     def process_aggregated_data(self, product_template, agg_data, parent=None):
         assert product_template
-        bom = self.env['mrp.bom'].search([
+        # BOMs are created on behalf of the user: sales rights are enough to configure
+        bom = self.env['mrp.bom'].sudo().search([
             ('product_tmpl_id', '=', product_template.id),
             ('active', '=', True)
         ], limit=1)  # pick first, ordered by sequence
 
         if not bom:
-            bom = self.env['mrp.bom'].create([{
+            bom = self.env['mrp.bom'].sudo().create([{
                 'product_tmpl_id': product_template.id,
                 'company_id': product_template.company_id.id,
             }])
@@ -548,12 +549,12 @@ class KonfooAPI(models.AbstractModel):
         try:
             if method == 'create':
                 _logger.info(f'create: {model=}; {object=}; {values=};')
-                res = self.create_object(model, values, object)
+                res = self.create_object(model.sudo(), values, object.sudo() if object else None)
             elif method == 'read':
                 res = object
             elif method == 'write':
                 _logger.info(f'write: {model=}; {object=}; {values=};')
-                object.write(values)
+                object.sudo().write(values)
                 res = object
             else:
                 res = getattr(object, method)(**values)
@@ -677,8 +678,8 @@ class KonfooAPI(models.AbstractModel):
                 self._copy_seller_ids(template_object, copy)
             else:
                 copy = template_object.with_context({'lang': 'en_US'}).copy(create)
-            return copy
-        return model.create(create)
+            return copy.sudo(False)
+        return model.create(create).sudo(False)
 
     @api.model
     def parse_odoo_ref(self, key):
@@ -739,7 +740,7 @@ class KonfooAPI(models.AbstractModel):
     @api.model
     def parse_records_search(self, model, value, instance_id, map_cache_objects):
         if isinstance(value, int):
-            return KonfooLookupSearch(self.env[model], [('id', '=', value)])
+            return KonfooLookupSearch(self.env[model].sudo(), [('id', '=', value)])
 
         # Expected input "(search) [domain] {kwargs}"
         parsed = re.search(r'^(\(search\))(?: )(\[.*?\])(?: )?(\{.*?\})?', str(value))
@@ -750,7 +751,7 @@ class KonfooAPI(models.AbstractModel):
         domain = safe_eval_objects(lookup_domain, map_cache_objects, instance_id)
         kwargs = safe_eval(lookup_kwargs) if lookup_kwargs else dict()
 
-        return KonfooLookupSearch(self.env[model], domain, kwargs)
+        return KonfooLookupSearch(self.env[model].sudo(), domain, kwargs)
 
     @api.model
     def find_product_by_field(self, field, value):
@@ -854,7 +855,7 @@ class KonfooAPI(models.AbstractModel):
             if product:
                 create_line = True
                 # the old session gets discarded in this case
-                product.write(dict(konfoo_session_id=session_object_id))
+                product.sudo().write(dict(konfoo_session_id=session_object_id))
                 _logger.info('Found existing product: %s (id=%s)', product.name, product.id)
 
         if product:
@@ -866,14 +867,14 @@ class KonfooAPI(models.AbstractModel):
                 vals = dict(name=product_name)
                 if additional_data is not None:
                     vals.update(additional_data)
-                product.write(vals)
+                product.sudo().write(vals)
                 if translated_data is not None:
                     for field, translations in translated_data.items():
                         for lang, value in translations.items():
-                            product.with_context({"lang": lang}).write({field: value})
+                            product.sudo().with_context({"lang": lang}).write({field: value})
 
-                if product.bom_count > 0:
-                    boms = self.env['mrp.bom'].search([
+                if product.sudo().bom_count > 0:
+                    boms = self.env['mrp.bom'].sudo().search([
                         ('product_tmpl_id', '=', product.product_tmpl_id.id), ('active', '=', True)])
                     for existing_bom in boms:
                         _logger.info(
@@ -891,18 +892,19 @@ class KonfooAPI(models.AbstractModel):
             if not template_product:
                 raise UserError(_('Could not find template product: "{}"'.format(template_product_value)))
 
-            if template_product.bom_count > 0:
+            if template_product.sudo().bom_count > 0:
                 raise UserError(_('Template product should not have BOMs defined'))
 
             create = dict(name=product_name, konfoo_session_id=session_object_id)
             if additional_data is not None:
                 create.update(additional_data)
-            product = template_product.copy(create)
-            self._copy_seller_ids(template_product, product)
+            product = template_product.sudo().copy(create)
+            self._copy_seller_ids(template_product.sudo(), product)
+            product = product.sudo(False)
             if translated_data is not None:
                 for field, translations in translated_data.items():
                     for lang, value in translations.items():
-                        product.with_context({"lang": lang}).write({field: value})
+                        product.sudo().with_context({"lang": lang}).write({field: value})
 
         return product, create_line, ignore_rules
 
