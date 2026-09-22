@@ -52,6 +52,8 @@ If you do not need a parameter to be set then the value can be `None` or the key
 Changelog
 ---------
 
+- 1.22.0
+    - Configurations can be confirmed with sales rights only: products, BOMs and rule objects are created with elevated rights on the records involved
 - 1.21.0
     - Rules validate their own output: a line with `validate: false` aborts the import with an error
 - 1.20.0
