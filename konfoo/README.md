@@ -52,6 +52,8 @@ If you do not need a parameter to be set then the value can be `None` or the key
 Changelog
 ---------
 
+- 1.22.1
+    - Restore `hasattr` check for `on_konfoo_completed` for backwards compatibility
 - 1.22.0
     - Configurations can be confirmed with sales rights only: products, BOMs and rule objects are created with elevated rights on the records involved
 - 1.21.0
