@@ -478,7 +478,8 @@ class KonfooAPI(models.AbstractModel):
             line_ids.write(line_vals)
             _logger.info('Updated: %s', line_ids)
 
-        parent.on_konfoo_completed(line_ids, product)
+        if hasattr(parent, 'on_konfoo_completed'):
+            parent.on_konfoo_completed(line_ids, product)
 
     @api.model
     def process_aggregated_data(self, product_template, agg_data, parent=None):
