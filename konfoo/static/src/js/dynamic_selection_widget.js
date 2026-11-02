@@ -1,14 +1,14 @@
 /** @odoo-module **/
 // noinspection DuplicatedCode
 
-import {useState} from "@odoo/owl";
+import { proxy } from "@odoo/owl";
 import { _t } from "@web/core/l10n/translation";
 import { registry } from "@web/core/registry";
 import { SelectionField, selectionField } from "@web/views/fields/selection/selection_field";
 
 export class DynamicSelectionField extends SelectionField {
     async setup() {
-        this.state = useState({
+        this.state = proxy({
             dynamicOptions: [],
         });
 

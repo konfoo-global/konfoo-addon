@@ -24,7 +24,7 @@
                         name="action_duplicate_konfoo_product"
                         type="object"
                         title="Duplicate"
-                        class="fa fa-files-o" />
+                        icon="content_copy" />
                 </xpath>
             </field>
         </record>
