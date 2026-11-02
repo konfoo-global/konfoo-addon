@@ -52,6 +52,8 @@ If you do not need a parameter to be set then the value can be `None` or the key
 Changelog
 ---------
 
+- 1.23.1
+    - Deleting a dataset now also deletes its fields and sync cache (dataset objects).
 - 1.23.0
     - Compatibility: port frontend to Owl 3 for Odoo 20 / edge (`useProps`, `proxy`, `this.` in templates, widget registration)
     - Compatibility: use Odoo 20 icon names for the line edit and duplicate buttons (FontAwesome classes no longer render)
