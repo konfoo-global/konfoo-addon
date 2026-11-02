@@ -1,16 +1,14 @@
 # noinspection PyStatementEffect
 {
     'name': 'Konfoo',
-    'version': '1.22.1',
+    'version': '1.23.0',
     'author': 'Konfoo',
     'website': 'https://konfoo.com',
     'license': 'Other proprietary',
     'data': [
         'data/cron.xml',
-
         'security/security.xml',
         'security/ir.access.csv',
-
         'views/konfoo_dataset.xml',
         'views/konfoo_cache.xml',
         'views/konfoo_session.xml',
@@ -18,7 +16,6 @@
         'views/konfoo_menus.xml',
         'views/sale_views.xml',
         'views/product_views.xml',
-
         'views/res_config_settings_views.xml',
     ],
     'depends': [
@@ -37,58 +34,59 @@
         #     'konfoo/static/src/**/*.xml',
         # ],
     },
-
     'installable': True,
     'application': True,
-
     'cloc_exclude': [
         '**/*',
     ],
-
     'override': {
         '19.0': {
             'data': [
                 'data/cron.xml',
-
                 'security/security.xml',
                 'security/ir.model.access.csv',
-
                 'views/konfoo_dataset.xml',
                 'views/konfoo_cache.xml',
                 'views/konfoo_session.xml',
                 'views/konfoo_allowed_model.xml',
                 'views/konfoo_menus.xml',
-                'views/sale_views.xml',
+                'views/sale_views_19.xml',
                 'views/product_views.xml',
-
                 'views/res_config_settings_views.xml',
             ],
+            'assets': {
+                'web.assets_backend': [
+                    'konfoo/static/src/19/js/*.js',
+                    'konfoo/static/src/css/*.css',
+                ],
+            },
         },
         '18.0': {
             'data': [
                 'data/cron.xml',
-
                 'security/security_legacy.xml',
                 'security/ir.model.access.csv',
-
                 'views/konfoo_dataset.xml',
                 'views/konfoo_cache.xml',
                 'views/konfoo_session.xml',
                 'views/konfoo_allowed_model.xml',
                 'views/konfoo_menus.xml',
-                'views/sale_views.xml',
+                'views/sale_views_19.xml',
                 'views/product_views.xml',
-
                 'views/res_config_settings_views.xml',
             ],
+            'assets': {
+                'web.assets_backend': [
+                    'konfoo/static/src/19/js/*.js',
+                    'konfoo/static/src/css/*.css',
+                ],
+            },
         },
         '17.0': {
             'data': [
                 'data/cron_legacy.xml',
-
                 'security/security_legacy.xml',
                 'security/ir.model.access.csv',
-
                 'views/konfoo_dataset_17.xml',
                 'views/konfoo_cache_17.xml',
                 'views/konfoo_session_17.xml',
@@ -96,7 +94,6 @@
                 'views/konfoo_menus.xml',
                 'views/sale_views_17.xml',
                 'views/product_views.xml',
-
                 'views/res_config_settings_views.xml',
             ],
             'assets': {
@@ -109,10 +106,8 @@
         '16.0': {
             'data': [
                 'data/cron_legacy.xml',
-
                 'security/security_legacy.xml',
                 'security/ir.model.access.csv',
-
                 'views/konfoo_dataset_legacy.xml',
                 'views/konfoo_cache_17.xml',
                 'views/konfoo_session_17.xml',
@@ -120,7 +115,6 @@
                 'views/konfoo_menus.xml',
                 'views/sale_views_16.xml',
                 'views/product_views.xml',
-
                 'views/res_config_settings_views_legacy.xml',  # settings block for <= 16.0
             ],
             'assets': {
@@ -130,7 +124,6 @@
                 ],
             },
         },
-
         '15.0': {
             'depends': [
                 'sale_management',
@@ -142,10 +135,8 @@
             ],
             'data': [
                 'data/cron_legacy.xml',
-
                 'security/security_legacy.xml',
                 'security/ir.model.access.csv',
-
                 'views/konfoo_dataset_legacy.xml',
                 'views/konfoo_cache_17.xml',
                 'views/konfoo_session_17.xml',
@@ -153,7 +144,6 @@
                 'views/konfoo_menus.xml',
                 'views/sale_views_16.xml',
                 'views/product_views.xml',
-
                 'views/res_config_settings_views_legacy.xml',  # settings block for <= 16.0
             ],
             'assets': {
@@ -163,5 +153,5 @@
                 ],
             },
         },
-    }
+    },
 }

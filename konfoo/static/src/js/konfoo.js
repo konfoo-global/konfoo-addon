@@ -7,21 +7,17 @@ import { rpc } from '@web/core/network/rpc';
 import { standardWidgetProps } from '@web/views/widgets/standard_widget_props';
 import { useEffect } from "@odoo/owl";
 
-// It is quite inconvenient that `odoo.info` is not available at this point.
-import { Widget } from '@web/views/widgets/widget';
-const isModernComponentInterface = ('props' in Widget && '*' in Widget.props && Widget.props['*'] === true);
-
 const KONFOO_VERBOSE = false;
 
 export class KonfooComponent extends owl.Component {
-    static props = {
+    props = owl.useProps({
         ...standardWidgetProps,
-        parentModel: { type: String, optional: true },
-        lineModel: { type: String, optional: true },
-    };
+        parentModel: owl.t.string().optional('sale.order'),
+        lineModel: owl.t.string().optional('sale.order.line'),
+    });
     static template = owl.xml`
-        <div t-if="state.isOpen" class="o_konfoo_container">
-            <iframe class="o_konfoo_iframe" t-att-src="state.config.url" t-on-load="onLoad"></iframe>
+        <div t-if="this.state.isOpen" class="o_konfoo_container">
+            <iframe class="o_konfoo_iframe" t-att-src="this.state.config.url" t-on-load="this.onLoad"></iframe>
         </div>
     `;
 
@@ -32,10 +28,8 @@ export class KonfooComponent extends owl.Component {
         super.setup()
 
         this.notifications = useService('notification');
-        this.props.parentModel = this.props.parentModel || 'sale.order';
-        this.props.lineModel = this.props.lineModel || 'sale.order.line';
 
-        this.state = owl.useState({
+        this.state = owl.proxy({
             isOpen: false,
             config: null,
             iframe: null,
@@ -266,18 +260,13 @@ export class KonfooComponent extends owl.Component {
     }
 }
 
-if (isModernComponentInterface) {
-    registry.category('view_widgets').add('konfoo', {
-        component: KonfooComponent,
-        extractProps: ({ attrs }) => {
-            const { parent, line } = attrs;
-            return {
-                parentModel: parent,
-                lineModel: line,
-            };
-        }
-    });
-}
-else {
-    registry.category("view_widgets").add("konfoo", KonfooComponent);
-}
+registry.category('view_widgets').add('konfoo', {
+    component: KonfooComponent,
+    extractProps: ({ attrs }) => {
+        const { parent, line } = attrs;
+        return {
+            parentModel: parent,
+            lineModel: line,
+        };
+    }
+});
