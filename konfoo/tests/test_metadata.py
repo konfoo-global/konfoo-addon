@@ -120,6 +120,8 @@ class TestKonfooMetadata(KonfooCase):
         konfoo.process_konfoo_session(ctx, '02XXXXXXXXXXXXXXXXXXXXXXXX', dict(), data, order, 'sale.order.line')
         self.assertEqual(order.origin, 'Made by Konfoo')
         self.assertEqual(len(order.order_line), 1)
-        self.assertEqual(order.order_line.name, f'{order.name}-Mock Configured Product EE')
+        # Odoo 20+: product name moved from `name` to computed `label`
+        line_text_field = 'name' if version_info[:2] < (20, 0) else 'label'
+        self.assertEqual(order.order_line[line_text_field], f'{order.name}-Mock Configured Product EE')
         self.assertEqual(order.order_line.product_id.description, '<b>Product Description US</b>')
         self.assertEqual(order.order_line.product_id.name, f'{order.name}-Mock Configured Product US')

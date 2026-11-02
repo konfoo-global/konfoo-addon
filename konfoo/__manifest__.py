@@ -1,7 +1,7 @@
 # noinspection PyStatementEffect
 {
     'name': 'Konfoo',
-    'version': '1.22.1',
+    'version': '1.23.0',
     'author': 'Konfoo',
     'website': 'https://konfoo.com',
     'license': 'Other proprietary',
@@ -47,10 +47,16 @@
                 'views/konfoo_session.xml',
                 'views/konfoo_allowed_model.xml',
                 'views/konfoo_menus.xml',
-                'views/sale_views.xml',
+                'views/sale_views_19.xml',
                 'views/product_views.xml',
                 'views/res_config_settings_views.xml',
             ],
+            'assets': {
+                'web.assets_backend': [
+                    'konfoo/static/src/19/js/*.js',
+                    'konfoo/static/src/css/*.css',
+                ],
+            },
         },
         '18.0': {
             'data': [
@@ -62,10 +68,16 @@
                 'views/konfoo_session.xml',
                 'views/konfoo_allowed_model.xml',
                 'views/konfoo_menus.xml',
-                'views/sale_views.xml',
+                'views/sale_views_19.xml',
                 'views/product_views.xml',
                 'views/res_config_settings_views.xml',
             ],
+            'assets': {
+                'web.assets_backend': [
+                    'konfoo/static/src/19/js/*.js',
+                    'konfoo/static/src/css/*.css',
+                ],
+            },
         },
         '17.0': {
             'data': [

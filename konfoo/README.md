@@ -52,6 +52,11 @@ If you do not need a parameter to be set then the value can be `None` or the key
 Changelog
 ---------
 
+- 1.23.0
+    - Compatibility: port frontend to Owl 3 for Odoo 20 / edge (`useProps`, `proxy`, `this.` in templates, widget registration)
+    - Compatibility: use Odoo 20 icon names for the line edit and duplicate buttons (FontAwesome classes no longer render)
+    - Compatibility: use `self.env.cr` instead of `self._cr` in dataset fields (removed in edge)
+    - Tests: use sale line `label` instead of `name` on Odoo 20+
 - 1.22.1
     - Restore `hasattr` check for `on_konfoo_completed` for backwards compatibility
 - 1.22.0

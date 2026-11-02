@@ -4,13 +4,9 @@
 import { registry } from '@web/core/registry';
 import { standardWidgetProps } from '@web/views/widgets/standard_widget_props';
 
-// It is quite inconvenient that `odoo.info` is not available at this point.
-import { Widget } from '@web/views/widgets/widget';
-const isModernComponentInterface = ('props' in Widget && '*' in Widget.props && Widget.props['*'] === true);
-
 export class KonfooEditButtonComponent extends owl.Component {
-    static props = { ...standardWidgetProps, };
-    static template = owl.xml`<button class="btn fa fa-pencil-square-o btn-link" t-on-click="open"></button>`;
+    props = owl.useProps(standardWidgetProps);
+    static template = owl.xml`<button class="oi btn btn-link" data-icon="edit_square" t-on-click="this.open"></button>`;
 
     open() {
         this.env.bus.trigger('KONFOO_OPEN', {
@@ -36,11 +32,6 @@ export class KonfooEditButtonComponent extends owl.Component {
     }
 }
 
-if (isModernComponentInterface) {
-    registry.category('view_widgets').add('konfoo-edit-button', {
-        component: KonfooEditButtonComponent,
-    });
-}
-else {
-    registry.category("view_widgets").add("konfoo-edit-button", KonfooEditButtonComponent);
-}
+registry.category('view_widgets').add('konfoo-edit-button', {
+    component: KonfooEditButtonComponent,
+});

@@ -32,7 +32,7 @@ class KonfooDatasetField(models.Model):
         dataset_id = self.env.context.get('default_dataset_id')
         if not dataset_id:
             return []
-        self._cr.execute(
+        self.env.cr.execute(
             """
             select name, name
             from ir_model_fields
@@ -40,7 +40,7 @@ class KonfooDatasetField(models.Model):
             order by name asc
             """,
             (dataset_id,))
-        options = self._cr.fetchall()
+        options = self.env.cr.fetchall()
         return options
 
     @api.constrains('csv_name')
