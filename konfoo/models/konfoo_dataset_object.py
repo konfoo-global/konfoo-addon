@@ -16,6 +16,6 @@ class KonfooDatasetObject(models.Model):
     else:
         _cache_index = models.Constraint('unique(dataset_id, res_id)', "Cache entry must have unique references")
 
-    dataset_id = fields.Many2one('konfoo.dataset', 'Dataset', required=True)
+    dataset_id = fields.Many2one('konfoo.dataset', 'Dataset', required=True, ondelete='cascade')
     res_id = fields.Integer('Resource ID', required=True)
     sync_date = fields.Datetime('Synced on', index=True, readonly=True, required=True)

@@ -5,3 +5,4 @@ from . import test_metadata
 from . import test_update_objects
 from . import test_interpolation
 from . import test_rule_validate
+from . import test_dataset_delete
