@@ -1,8 +1,4 @@
-
 name: Auto-Release
-
-env:
-  REF_FAST_FORWARD: "20.0"
 
 on:
   workflow_dispatch:
@@ -15,152 +11,22 @@ permissions:
   packages: read
 
 jobs:
-  release-unstable:
+  release:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        branch: [ '21.0', '20.0', '19.0', '18.0', '17.0', '16.0', '15.0' ]
     container:
       image: "ghcr.io/konfoo-global/konfoo-omvbs:latest"
-      options: --user root
       credentials:
         username: ${{ github.repository_owner }}
         password: ${{ secrets.GITHUB_TOKEN }}
-
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
-          ref: ${{ env.REF_FAST_FORWARD }}
+          ref: ${{ matrix.branch }}
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Configure git
-        run: |
-          git config --global user.name 'Automation'
-          git config --global user.email 'info@konfoo.com'
-          git config --global --add safe.directory $(pwd)
-      - name: Build release
-        run: /opt/release.sh
-      - name: Push changes
-        run: git push
-
-  release-lts-19:
-    runs-on: ubuntu-latest
-    container:
-      image: "ghcr.io/konfoo-global/konfoo-omvbs:latest"
-      options: --user root
-      credentials:
-        username: ${{ github.repository_owner }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: "19.0"
-          fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Configure git
-        run: |
-          git config --global user.name 'Automation'
-          git config --global user.email 'info@konfoo.com'
-          git config --global --add safe.directory $(pwd)
-      - name: Build release
-        run: /opt/release.sh
-      - name: Push changes
-        run: git push
-
-  release-lts-18:
-    runs-on: ubuntu-latest
-    container:
-      image: "ghcr.io/konfoo-global/konfoo-omvbs:latest"
-      options: --user root
-      credentials:
-        username: ${{ github.repository_owner }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: "18.0"
-          fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Configure git
-        run: |
-          git config --global user.name 'Automation'
-          git config --global user.email 'info@konfoo.com'
-          git config --global --add safe.directory $(pwd)
-      - name: Build release
-        run: /opt/release.sh
-      - name: Push changes
-        run: git push
-
-  release-lts-17:
-    runs-on: ubuntu-latest
-    container:
-      image: "ghcr.io/konfoo-global/konfoo-omvbs:latest"
-      options: --user root
-      credentials:
-        username: ${{ github.repository_owner }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: "17.0"
-          fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Configure git
-        run: |
-          git config --global user.name 'Automation'
-          git config --global user.email 'info@konfoo.com'
-          git config --global --add safe.directory $(pwd)
-      - name: Build release
-        run: /opt/release.sh
-      - name: Push changes
-        run: git push
-
-  release-lts-16:
-    runs-on: ubuntu-latest
-    container:
-      image: "ghcr.io/konfoo-global/konfoo-omvbs:latest"
-      options: --user root
-      credentials:
-        username: ${{ github.repository_owner }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: "16.0"
-          fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Configure git
-        run: |
-          git config --global user.name 'Automation'
-          git config --global user.email 'info@konfoo.com'
-          git config --global --add safe.directory $(pwd)
-      - name: Build release
-        run: /opt/release.sh
-      - name: Push changes
-        run: git push
-
-  release-lts-15:
-    runs-on: ubuntu-latest
-    container:
-      image: "ghcr.io/konfoo-global/konfoo-omvbs:latest"
-      options: --user root
-      credentials:
-        username: ${{ github.repository_owner }}
-        password: ${{ secrets.GITHUB_TOKEN }}
-
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: "15.0"
-          fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
-
       - name: Configure git
         run: |
           git config --global user.name 'Automation'
