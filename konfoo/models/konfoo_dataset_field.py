@@ -21,7 +21,7 @@ class KonfooDatasetField(models.Model):
     else:
         _uniq = models.Constraint('unique(dataset_id, name)', "Dataset fields must be unique")
 
-    dataset_id = fields.Many2one('konfoo.dataset', 'Dataset', required=True)
+    dataset_id = fields.Many2one('konfoo.dataset', 'Dataset', required=True, ondelete='cascade')
     name = DynamicSelection(string='Name', required=True, selection_dynamic='list_model_fields')
     csv_name = fields.Char('CSV Column', required=True)
     is_unique = fields.Boolean('Unique Index', required=True)
